@@ -1,0 +1,34 @@
+This patch disables the install target that uses rsync.
+*** a/Makefile.in	Mon May  2 23:40:46 2016
+--- b/Makefile.in	Mon May  2 23:43:59 2016
+***************
+*** 23,36 ****
+  $(INSTALL_SUBDIR): build
+  	mkdir -p $@
+  
+! install: $(INSTALL_SUBDIR) test
+! 	rsync -a $(CURDIR)/etc $(INSTALL_DIR)
+! 	rsync -a $(CURDIR)/demo $(INSTALL_BIN_DIR)
+! 	rsync -a $(CURDIR)/redist/ $(INSTALL_DIR)/opt
+! 	rsync -a $(STRELKA_DIR)/redist/samtools* $(INSTALL_DIR)/opt
+! 	rsync -a $(STRELKA_DIR)/redist/tabix* $(INSTALL_DIR)/opt
+! 	rsync -a $(STRELKA_DIR)/src/bin/strelka2 $(INSTALL_LIBEXEC_DIR)
+! 	$(MAKE) -C $(SRC_DIR) $@
+  
+  test: build
+  #STRICT_COMPILE=0 $(MAKE) -C $(STRELKA_DIR) $@
+--- 23,36 ----
+  $(INSTALL_SUBDIR): build
+  	mkdir -p $@
+  
+! install: $(INSTALL_SUBDIR)
+! #	rsync -a $(CURDIR)/etc $(INSTALL_DIR)
+! #	rsync -a $(CURDIR)/demo $(INSTALL_BIN_DIR)
+! #	rsync -a $(CURDIR)/redist/ $(INSTALL_DIR)/opt
+! #	rsync -a $(STRELKA_DIR)/redist/samtools* $(INSTALL_DIR)/opt
+! #	rsync -a $(STRELKA_DIR)/redist/tabix* $(INSTALL_DIR)/opt
+! #	rsync -a $(STRELKA_DIR)/src/bin/strelka2 $(INSTALL_LIBEXEC_DIR)
+! #	$(MAKE) -C $(SRC_DIR) $@
+  
+  test: build
+  #STRICT_COMPILE=0 $(MAKE) -C $(STRELKA_DIR) $@

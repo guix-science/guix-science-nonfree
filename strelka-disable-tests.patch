@@ -1,0 +1,20 @@
+This patch disables running tests.
+*** a/Makefile.in	2016-05-02 21:56:20.532062192 +0200
+--- b/Makefile.in	2016-05-02 22:30:12.113035039 +0200
+***************
+*** 33,39 ****
+  	$(MAKE) -C $(SRC_DIR) $@
+  
+  test: build
+! 	STRICT_COMPILE=0 $(MAKE) -C $(STRELKA_DIR) $@
+  
+  build:
+  	$(MAKE) -C $(REDIST_DIR) $@
+--- 33,39 ----
+  	$(MAKE) -C $(SRC_DIR) $@
+  
+  test: build
+! #STRICT_COMPILE=0 $(MAKE) -C $(STRELKA_DIR) $@
+  
+  build:
+  	$(MAKE) -C $(REDIST_DIR) $@
