@@ -149,3 +149,107 @@ indels from the aligned sequencing reads of matched tumor-normal samples")
     (propagated-inputs
      `(("vcftools" ,vcftools)
        ("htslib" ,htslib)))))
+
+(define-public r-gsalib
+  (package
+   (name "r-gsalib")
+   (version "2.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (cran-uri "gsalib" version))
+     (sha256
+      (base32
+       "1k3zjdydzb0dfh1ihih08d4cw6rdamgb97cdqna9mf0qdjc3pcp1"))))
+   (build-system r-build-system)
+   (home-page "http://cran.r-project.org/web/packages/gsalib")
+   (synopsis "Utility Functions For GATK")
+   (description "This package contains utility functions used by the Genome
+Analysis Toolkit (GATK) to load tables and plot data.  The GATK is a toolkit
+for variant discovery in high-throughput sequencing data.")
+   (license license:expat)))
+
+(define-public gatk-bin-3.8.1-no-intel-deflation
+  (package
+    (name "gatk")
+    (version "3.8.1-aa8764d6c")
+    (source (origin
+             (method url-fetch)
+             (uri "https://www.roelj.com/gatk-3.8.1-aa8764d6c.jar")
+             (sha256
+              (base32
+               "1w46s2jh1q7h1r8shjw09y8yw27q15wlkviiqby3wv20haaqqjcg"))))
+    (build-system gnu-build-system)
+    (arguments
+    `(#:tests? #f ; This is a binary package only, so no tests.
+      #:phases
+      (modify-phases %standard-phases
+        (delete 'unpack)
+        (delete 'configure) ; Nothing to configure.
+        (delete 'build) ; This is a binary package only.
+        (replace 'install
+          (lambda _
+            (let ((out (string-append (assoc-ref %outputs "out")
+                                      "/share/java/" ,name "/")))
+              (mkdir-p out)
+              (copy-file (assoc-ref %build-inputs "source")
+                         (string-append out "/GenomeAnalysisTK.jar"))))))))
+    (propagated-inputs
+     `(("r-gsalib" ,r-gsalib)
+       ("r-ggplot2" ,r-ggplot2)
+       ("r-gplots" ,r-gplots)
+       ("r-reshape" ,r-reshape)
+       ("r-optparse" ,r-optparse)
+       ("r-dnacopy" ,r-dnacopy)
+       ("r-naturalsort" ,r-naturalsort)
+       ("r-dplyr" ,r-dplyr)
+       ("r-data-table" ,r-data-table)
+       ("r-hmm" ,r-hmm)
+       ("gatk-queue-bin-3.8-1" ,gatk-queue-bin-3.8-1)))
+    (home-page "https://www.broadinstitute.org/gatk/")
+    (synopsis "Package for analysis of high-throughput sequencing")
+    (description "The Genome Analysis Toolkit or GATK is a software package for
+analysis of high-throughput sequencing data, developed by the Data Science and
+Data Engineering group at the Broad Institute.  The toolkit offers a wide
+variety of tools, with a primary focus on variant discovery and genotyping as
+well as strong emphasis on data quality assurance.  Its robust architecture,
+powerful processing engine and high-performance computing features make it
+capable of taking on projects of any size.")
+    ;; There are additional restrictions that make it nonfree.
+    (license license:expat)))
+
+(define-public gatk-queue-bin-3.8-1
+  (package
+    (name "gatk-queue")
+    (version "3.8-1-0-gf15c1c3ef")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://www.roelj.com/gatk-queue-" version ".tar.bz2"))
+              (sha256
+               (base32 "0435lf2751w3l2m86m3h6girwr09kpiqahq3pj49gibqnyylx4sq"))))
+    (build-system gnu-build-system)
+    (arguments
+    `(#:tests? #f ; This is a binary package only, so no tests.
+      #:phases
+      (modify-phases %standard-phases
+        (delete 'configure) ; Nothing to configure.
+        (delete 'build) ; This is a binary package only.
+        (replace 'install
+          (lambda _
+            (let ((out (string-append (assoc-ref %outputs "out")
+                                      "/share/java/gatk/")))
+              (mkdir-p out)
+              (install-file "Queue.jar" out)))))))
+    (home-page "https://www.broadinstitute.org/gatk/")
+    (synopsis "Package for analysis of high-throughput sequencing")
+    (description "The Genome Analysis Toolkit or GATK is a software package for
+analysis of high-throughput sequencing data, developed by the Data Science and
+Data Engineering group at the Broad Institute.  The toolkit offers a wide
+variety of tools, with a primary focus on variant discovery and genotyping as
+well as strong emphasis on data quality assurance.  Its robust architecture,
+powerful processing engine and high-performance computing features make it
+capable of taking on projects of any size.")
+    ;; There are additional restrictions that make it nonfree.
+    (license license:expat)))
+
