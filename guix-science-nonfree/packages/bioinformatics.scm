@@ -253,3 +253,101 @@ capable of taking on projects of any size.")
     ;; There are additional restrictions that make it nonfree.
     (license license:expat)))
 
+(define-public igv
+  (package
+    (name "igv")
+    (version "2.8.10")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append
+             "http://data.broadinstitute.org/igv/projects/downloads/"
+             "2.8/IGV_Linux_" version ".zip"))
+       (sha256
+        (base32 "1qrhsvl6z5h1kg3pji08fzqj08c6l2lxj0qv7hbvys3mymz4lfzv"))))
+    (build-system gnu-build-system)
+    (propagated-inputs
+     `(("openjdk11" ,openjdk11)))
+    (native-inputs
+     `(("unzip" ,unzip)))
+    (arguments
+     `(#:tests? #f  ; No tests available.
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'configure) ; Nothing to configure.
+         (delete 'build) ; This is a binary package only.
+         (replace 'install
+           (lambda _
+             (let* ((out (assoc-ref %outputs "out"))
+                    (bin (string-append out "/bin"))
+                    (lib (string-append out "/lib"))
+                    (share (string-append out "/share/igv")))
+               (mkdir-p share)
+               (mkdir-p lib)
+               (mkdir-p bin)
+               (copy-recursively "lib" lib)
+               (substitute* "igv.sh"
+                 (("prefix=")
+                  (string-append "prefix=" lib " # "))
+                 (("\\$\\{prefix\\}/igv.args")
+                  (string-append share "/igv.args"))
+                 (("--module-path=\"\\$\\{prefix\\}/lib\"")
+                  (string-append "--module-path=" lib))
+                 (("exec java")
+                  (string-append "exec " (assoc-ref %build-inputs "openjdk11")
+                                 "/bin/java")))
+               (install-file "igv.args" share)
+               (install-file "igv.sh" bin)))))))
+   (home-page "http://www.broadinstitute.org/software/igv/")
+   (synopsis "Integrative Genomics Viewer")
+   (description "The Integrative Genomics Viewer (IGV) is a high-performance
+visualization tool for interactive exploration of large, integrated genomic
+datasets.  It supports a wide variety of data types, including array-based and
+next-generation sequence data, and genomic annotations.")
+   ;; No license specified.
+   (license license:non-copyleft)))
+
+(define-public igvtools
+  (package
+   (name "igvtools")
+   (version "2.3.71")
+   (source (origin
+     (method url-fetch)
+     (uri (string-append
+           "http://data.broadinstitute.org/igv/projects/downloads/2.3/igvtools_"
+           version ".zip"))
+     (sha256
+      (base32 "1z7fx79jfsqm0ry89mchifxxrj7vl1h9f98x6p2r2vcbx8f4zvi8"))))
+   (build-system gnu-build-system)
+   (inputs
+    `(("icedtea" ,icedtea-8)))
+   (native-inputs
+    `(("unzip" ,unzip)))
+   (arguments
+    `(#:tests? #f ; This is a binary package only, so no tests.
+      #:phases
+      (modify-phases %standard-phases
+        (delete 'configure) ; Nothing to configure.
+        (delete 'build) ; This is a binary package only.
+        (add-before 'install 'fix-java-command
+          (lambda* (#:key inputs outputs #:allow-other-keys)
+            (substitute* "igvtools"
+              (("java -D") (string-append
+                            (assoc-ref inputs "icedtea")
+                            "/bin/java -D")))))
+        (replace 'install
+          (lambda _
+            (let* ((out (assoc-ref %outputs "out"))
+                   (bin (string-append out "/share/java/" ,name)))
+              (install-file "igvtools.jar" bin)
+              (install-file "igvtools" bin)
+              (mkdir (string-append bin "/genomes"))
+              (copy-recursively "genomes" (string-append bin "/genomes"))))))))
+   (home-page "http://www.broadinstitute.org/software/igv/")
+   (synopsis "Integrative Genomics Viewer")
+   (description "The Integrative Genomics Viewer (IGV) is a high-performance
+visualization tool for interactive exploration of large, integrated genomic
+datasets.  It supports a wide variety of data types, including array-based and
+next-generation sequence data, and genomic annotations.")
+   ;; No license specified.
+   (license license:non-copyleft)))
