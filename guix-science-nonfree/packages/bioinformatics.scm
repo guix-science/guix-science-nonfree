@@ -351,3 +351,325 @@ datasets.  It supports a wide variety of data types, including array-based and
 next-generation sequence data, and genomic annotations.")
    ;; No license specified.
    (license license:non-copyleft)))
+
+(define-public snpeff-bin-4.1
+  (package
+   (name "snpeff")
+   (version "4.1")
+   (source (origin
+             (method url-fetch)
+            (uri "mirror://sourceforge/snpeff/snpEff_v4_1_core.zip")
+            (sha256
+             (base32 "1vjgj6aacjsw6iczy09h18q5kx8ppxrrcq8w38g159zq7y3732kb"))))
+   (build-system gnu-build-system)
+   (arguments
+    `(#:tests? #f ; This is a binary package only, so no tests.
+      #:phases
+      (modify-phases %standard-phases
+        (delete 'configure) ; Nothing to configure.
+        (delete 'build) ; This is a binary package only.
+        (replace 'install
+          (lambda* (#:key inputs outputs #:allow-other-keys)
+            (let* ((current-dir (getcwd))
+                   (out (assoc-ref %outputs "out"))
+                   (bin (string-append out "/share/java/" ,name))
+                   (share (string-append out "/share/snpeff"))
+                   (clinvar-file (string-append
+                                  (assoc-ref inputs "clinvar")
+                                  "/share/clinvar/GRCh37/clinvar.vcf.gz"))
+                   (snpeff-db-dir (string-append share "/data"))
+                   (snpeff-db (assoc-ref inputs "snpeff-database"))
+                   (dbsnp-file (string-append (assoc-ref inputs "dbsnp")
+                                             "/share/dbsnp/dbSnp.vcf.gz"))
+                   (create-and-copy
+                    (lambda (dir)
+                      (mkdir (string-append bin "/" dir))
+                      (copy-recursively dir (string-append bin "/" dir)))))
+              (mkdir-p bin)
+              (mkdir-p share)
+              (substitute* "snpEff.config"
+                (("data.dir = ./data/")
+                 (string-append "data.dir = " share "/data"))
+                (("database.local.clinvar      = ./db/GRCh38/clinvar/clinvar-latest.vcf.gz")
+                 (string-append "database.local.clinvar      = " clinvar-file))
+                (("database.local.dbsnp        = ./db/GRCh38/dbSnp/dbSnp.vcf.gz")
+                 (string-append "database.local.dbsnp        = " dbsnp-file)))
+              (chdir share)
+              (system* (string-append (assoc-ref inputs "unzip")
+                                      "/bin/unzip") snpeff-db)
+              (chdir current-dir)
+
+              (install-file "snpEff.config" bin)
+              (install-file "snpEff.jar" bin)
+              (install-file "SnpSift.jar" bin)
+              (map create-and-copy '("scripts" "galaxy"))))))))
+   (native-inputs
+    `(("unzip" ,unzip)
+      ("perl" ,perl)
+      ("python" ,python-2)
+      ("bash" ,bash)
+      ("r" ,r)))
+   (inputs
+    `(("perl" ,perl)
+      ("python" ,python)
+      ("bash" ,bash)
+      ("r" ,r)
+      ("icedtea" ,icedtea-7)
+      ("clinvar" ,clinvar-grch37)
+      ("gwascatalog" ,gwascatalog)
+      ("dbnsfp" ,dbnsfp)
+      ("snpeff-database"
+       ,(origin
+         (method url-fetch)
+         (uri (string-append
+               "mirror://sourceforge/snpeff/databases/v4_1/"
+               "snpEff_v4_1_GRCh37.74.zip"))
+         (sha256
+          (base32 "1p02n1dd4b04vf425wm7c5b749rjxj6va78ibbfzdhggl38wg345"))))
+      ("dbsnp" ,dbsnp)))
+   (home-page "http://snpeff.sourceforge.net/")
+   (synopsis "Genetic variant annotation and effect prediction toolbox.")
+   (description "Genetic variant annotation and effect prediction toolbox.
+It annotates and predicts the effects of variants on genes (such as amino
+acid changes).")
+   ;; No license specified.
+   (license license:non-copyleft)))
+
+(define-public snpeff-bin-4.1h
+ (package (inherit snpeff-bin-4.1)
+  (name "snpeff")
+  (version "4.1h")
+  (source (origin
+      (method url-fetch)
+      (uri "mirror://sourceforge/snpeff/snpEff_v4_1h_core.zip")
+      (sha256
+        (base32 "1j45jp4y8wj0q01clxsx46w1f4jm2wh85yl1mbrha7qbqs8c1qn3"))))))
+
+(define-public snpeff-bin-4.3t
+ (package (inherit snpeff-bin-4.1)
+  (name "snpeff")
+  (version "4.3t")
+  (source (origin
+      (method url-fetch)
+      (uri "mirror://sourceforge/snpeff/snpEff_v4_3t_core.zip")
+      (sha256
+       (base32 "0i12mv93bfv8xjwc3rs2x73d6hkvi7kgbbbx3ry984l3ly4p6nnm"))))
+  (arguments
+    `(#:tests? #f ; This is a binary package only, so no tests.
+      #:phases
+      (modify-phases %standard-phases
+        (delete 'configure) ; Nothing to configure.
+        (delete 'build) ; This is a binary package only.
+        (replace 'install
+          (lambda* (#:key inputs outputs #:allow-other-keys)
+            (chdir "../snpEff")
+            (let* ((current-dir (getcwd))
+                   (out (assoc-ref %outputs "out"))
+                   (bin (string-append out "/share/java/" ,name))
+                   (patch-bin (string-append (assoc-ref %build-inputs "patch")
+                                             "/bin/patch"))
+                   (share (string-append out "/share/snpeff"))
+                   (clinvar-file (string-append
+                                  (assoc-ref inputs "clinvar")
+                                  "/share/clinvar/GRCh37/clinvar.vcf.gz"))
+                   (snpeff-db-dir (string-append share "/data"))
+                   (snpeff-db (assoc-ref inputs "snpeff-database"))
+                   (snpeff-db-GRCm38.86 (assoc-ref inputs "snpeff-database-GRCm38.86"))
+                   (snpeff-db-GRCh37.75 (assoc-ref inputs "snpeff-database-GRCh37.75"))
+                   (snpeff-db-UMD3.1.86 (assoc-ref inputs "snpeff-database-UMD3.1.86"))
+                   (snpeff-db-GRCh38.86 (assoc-ref inputs "snpeff-database-GRCh38.86"))
+                   (dbsnp-dir (string-append (assoc-ref inputs "dbsnp")
+                                             "/share/dbsnp/"))
+                   (gwascatalog-file (string-append
+                                      (assoc-ref inputs "gwascatalog")
+                                      "/share/gwascatalog/gwascatalog.txt"))
+                   (dbnsfp-file (string-append
+                                 (assoc-ref inputs "dbnsfp")
+                                 "/share/dbnsfp/dbNSFP2.9_gene.complete.gz"))
+                   (create-and-copy
+                    (lambda (dir)
+                      (mkdir (string-append bin "/" dir))
+                      (copy-recursively dir (string-append bin "/" dir)))))
+              (mkdir-p bin)
+              (mkdir-p share)
+              (substitute* "snpEff.config"
+                (("data.dir = ./data/")
+                 (string-append "data.dir = " share "/data"))
+                (("database.clinvar.GRCh37                 = ./db/GRCh37/clinvar/clinvar-latest.vcf.gz")
+                 (string-append "database.clinvar.GRCh37      = " clinvar-file))
+                (("database.dbsnp.GRCh37                   = ./db/GRCh37/dbSnp/")
+                 (string-append "database.dbsnp.GRCh37        = " dbsnp-dir))
+                (("database.gwascatalog.GRCh37             = ./db/GRCh37/gwasCatalog/gwascatalog.txt")
+                 (string-append "database.gwascatalog.GRCh37        = " gwascatalog-file))
+                (("database.dbnsfp.GRCh37                  = ./db/GRCh37/dbNSFP/dbNSFP.txt.gz")
+                 (string-append "database.dbnsfp.GRCh37                  = " dbnsfp-file)))
+              (chdir share)
+              (system* (string-append (assoc-ref inputs "unzip")
+                                      "/bin/unzip") snpeff-db)
+              (system* (string-append (assoc-ref inputs "unzip")
+                                      "/bin/unzip") snpeff-db-GRCm38.86)
+              (system* (string-append (assoc-ref inputs "unzip")
+                                      "/bin/unzip") snpeff-db-GRCh37.75)
+              (system* (string-append (assoc-ref inputs "unzip")
+                                      "/bin/unzip") snpeff-db-GRCh38.86)
+              (system* (string-append (assoc-ref inputs "unzip")
+                                      "/bin/unzip") snpeff-db-UMD3.1.86)
+
+              (chdir current-dir)
+              (install-file "snpEff.config" bin)
+              (install-file "snpEff.jar" bin)
+              (install-file "SnpSift.jar" bin)
+              (for-each create-and-copy '("scripts" "galaxy"))
+
+              ;; Backport settings from an older snpEff version by
+              ;; applying the following patch.
+              (with-directory-excursion bin
+                (format #t "Applying patches... ")
+                (let ((patch-file (assoc-ref %build-inputs "patch-file")))
+                  (format #t
+                   (if (zero? (system (string-append patch-bin " < " patch-file)))
+                       " Succeeded.~%"
+                       " Failed.~%"))))
+
+              #t))))))
+  (native-inputs
+    `(("unzip" ,unzip)
+      ("perl" ,perl)
+      ("python" ,python-2)
+      ("bash" ,bash)
+      ("r" ,r)
+      ("patch" ,patch)
+      ("patch-file"
+       ,(origin
+         (method url-fetch)
+         (uri (search-patch "snpeff-4.3t-backport-settings.patch"))
+         (sha256
+          (base32
+           "1hw44vzcb6k8fq66740kd7kcdmb68bf5zbibc467bcxiiay8xpca"))))))
+  (inputs
+    `(("perl" ,perl)
+      ("python" ,python)
+      ("bash" ,bash)
+      ("r" ,r)
+      ("icedtea" ,icedtea-7)
+      ("clinvar" ,clinvar-grch37)
+      ("gwascatalog" ,gwascatalog)
+      ("dbnsfp" ,dbnsfp)
+      ("snpeff-database"
+       ,(origin
+         (method url-fetch)
+         (uri (string-append
+               "mirror://sourceforge/snpeff/databases/v4_3/"
+               "snpEff_v4_3_hg19.zip"))
+         (sha256
+          (base32 "0rnaa858shjgxx284m73ikf2a1k11n3gc7861svczm2f98wwhar2"))))
+    ("snpeff-database-GRCm38.86"
+       ,(origin
+         (method url-fetch)
+         (uri (string-append
+               "mirror://sourceforge/snpeff/databases/v4_3/"
+               "snpEff_v4_3_GRCm38.86.zip"))
+         (sha256
+          (base32 "0rsdgv01yc33ppr8z412gk07xq098vsl8qhhii7s34kchk0qa746"))))
+    ("snpeff-database-UMD3.1.86"
+       ,(origin
+         (method url-fetch)
+         (uri (string-append
+               "mirror://sourceforge/snpeff/databases/v4_3/"
+               "snpEff_v4_3_UMD3.1.86.zip"))
+         (sha256
+          (base32 "0h4d7w3n5pr1lfbmf921z4rx163n93qfw2klv94qw7syl3db6lli"))))
+    ("snpeff-database-GRCh38.86"
+       ,(origin
+         (method url-fetch)
+         (uri (string-append
+               "mirror://sourceforge/snpeff/databases/v4_3/"
+               "snpEff_v4_3_GRCh38.86.zip"))
+         (sha256
+          (base32 "1rf8q7l732ayjq2lpny4s75zpij05j00151374nqblk4wri2mz0i"))))
+
+    ("snpeff-database-GRCh37.75"
+       ,(origin
+         (method url-fetch)
+         (uri (string-append
+               "mirror://sourceforge/snpeff/databases/v4_3/"
+               "snpEff_v4_3_GRCh37.75.zip"))
+         (sha256
+          (base32 "19c8wwx91vq47z7j7f455vsv8jw067x5rd7449d1z0nln82zpmhm"))))
+      ("dbsnp" ,dbsnp)))))
+
+(define (varscan version commit hash)
+  (let ((jar-file (string-append "varscan-" version ".jar")))
+    (package
+      (name "varscan")
+      (version version)
+      (source (origin
+                (method url-fetch)
+                (uri (string-append
+                      "https://github.com/dkoboldt/varscan/raw/"
+                      commit "/VarScan.v" version ".source.jar"))
+                (sha256 (base32 hash))))
+      (build-system ant-build-system)
+      (arguments
+       `(#:tests? #f ; No test target.
+         #:phases
+         (modify-phases %standard-phases
+           (replace 'unpack
+             (lambda _
+               (mkdir "source")
+               (chdir "source")
+               (and
+                ;; Unpack the Java archive containing the source files.
+                (zero? (system* "jar" "xf" (assoc-ref %build-inputs "source")))
+                ;; Remove existing compiled output.
+                (with-directory-excursion "net/sf/varscan/"
+                  (for-each (lambda (file)
+                              (unless (string= (string-take-right file 5) ".java")
+                                (zero? (system* "rm" file))))
+                            (find-files "." #:directories? #f))))))
+           (replace 'build
+             (lambda _
+               ;; Keep a list of files to be included in the JAR.
+               (let ((out-files '("META-INF/MANIFEST.MF"))
+                     (sources-dir "net/sf/varscan/"))
+                 (and
+                  (with-directory-excursion sources-dir
+                    (for-each
+                     (lambda (file)
+                       (when (string= (string-take-right file 5) ".java")
+                         ;; Compile the source files.
+                         (zero? (system* "javac" file))
+                         ;; Add to list of files to be included in the JAR.
+                         (set! out-files
+                               (append
+                                out-files
+                                (list (string-append sources-dir
+                                  (string-drop-right (string-drop file 2) 5)
+                                  ".class"))))))
+                     (find-files "." #:directories? #f)))
+                  ;; Construct the Java archive.
+                  (let ((params (append '("jar" "cfm" ,jar-file) out-files)))
+                    (zero? (apply system* params)))))))
+           (replace 'install
+             (lambda _
+               (let ((out (string-append (assoc-ref %outputs "out")
+                                         "/share/java/varscan/")))
+                 (install-file ,jar-file out)))))))
+      (home-page "http://dkoboldt.github.io/varscan/")
+      (synopsis "Variant detection in massively parallel sequencing data")
+      (description "")
+      ;; Free for non-commercial use by academic, government, and
+      ;; non-profit/not-for-profit institutions
+      (license license:non-copyleft))))
+
+(define-public varscan-2.4.0
+  (varscan "2.4.0" "ed3227992f31725548d6106dc7fcd0bd8879ff1e"
+           "1qyl93awj31qg4pbwaicm5vgq4zv5b9aqa10dpna9qrvbcqfdz90"))
+
+(define-public varscan-2.4.1
+  (varscan "2.4.1" "91f116629b2addce523a2eabe118b1cd7a538444"
+           "0y45ympkza7qwcbcisg006286pwjbr5978n03hx5nvl09f0mapk8"))
+
+(define-public varscan-2.4.2
+  (varscan "2.4.2" "18425ce00e3ced8afc624bd86de142b1cd1e0eb0"
+           "14f7fp0yaj3lsif1dpjdci7kz3b2fd9qic3299a2bvgk3rv3lp6n"))
