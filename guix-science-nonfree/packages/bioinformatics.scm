@@ -673,3 +673,489 @@ acid changes).")
 (define-public varscan-2.4.2
   (varscan "2.4.2" "18425ce00e3ced8afc624bd86de142b1cd1e0eb0"
            "14f7fp0yaj3lsif1dpjdci7kz3b2fd9qic3299a2bvgk3rv3lp6n"))
+
+(define-public clinvar
+  (package
+   (name "clinvar-vcf")
+   (version "GRCh38-20200919")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append
+                  "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"))
+            (sha256
+             (base32
+	      "06wdfg6wkksra4if1hil78p9707l9zq8h74cc4mpqrhl1vv8j8sq"))))
+   (build-system trivial-build-system)
+   (arguments
+    `(#:modules ((guix build utils))
+      #:builder
+      (begin
+        (use-modules (guix build utils))
+        (let ((source-file (assoc-ref %build-inputs "source"))
+              (output-dir (string-append %output "/share/clinvar/GRCh38")))
+          (mkdir-p output-dir)
+          (copy-file source-file
+                     (string-append output-dir "/clinvar.vcf.gz"))))))
+   (home-page "https://www.ncbi.nlm.nih.gov/clinvar/")
+   (synopsis "Public archive of reports of human genetic variation")
+   (description "ClinVar is a freely accessible, public archive of reports
+of the relationships among human variations and phenotypes, with supporting
+evidence.  ClinVar thus facilitates access to and communication about the
+relationships asserted between human variation and observed health status,
+and the history of that interpretation.  ClinVar processes submissions
+reporting variants found in patient samples, assertions made regarding their
+clinical significance, information about the submitter, and other supporting
+data.  The alleles described in submissions are mapped to reference sequences,
+and reported according to the HGVS standard.  ClinVar then presents the data
+for interactive users as well as those wishing to use ClinVar in daily
+workflows and other local applications.  ClinVar works in collaboration with
+interested organizations to meet the needs of the medical genetics community
+as efficiently and effectively as possible.")
+   (license #f)))
+
+(define-public clinvar-grch37
+  (package (inherit clinvar)
+    (version "GRCh37-20200919")
+    (source (origin
+             (method url-fetch)
+             (uri (string-append
+                   "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"))
+             (sha256
+              (base32
+               "0srdr8mwf2wnch8v5gkdj0lqqmm50inzysh9cb4gb7ndrbwhharv"))))
+   (arguments
+    `(#:modules ((guix build utils))
+      #:builder
+      (begin
+        (use-modules (guix build utils))
+        (let ((source-file (assoc-ref %build-inputs "source"))
+              (output-dir (string-append %output "/share/clinvar/GRCh37")))
+          (mkdir-p output-dir)
+          (copy-file source-file
+                     (string-append output-dir "/clinvar.vcf.gz"))))))))
+
+(define-public dbsnp
+  (package
+    (name "dbsnp")
+    (version "human_9606")
+    (source (origin
+              (method url-fetch)
+              (uri "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/00-All.vcf.gz")
+              (sha256
+               (base32
+                "0f2zzi0br0c1dvlx6wfgfm6f7rgp0kb19gb6p0kxzbs3n92viiqa"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let* ((source-file (assoc-ref %build-inputs "source"))
+                (output-dir  (string-append %output "/share/dbsnp"))
+                (output-file (string-append output-dir "/dbSnp.vcf.gz")))
+           (mkdir-p output-dir)
+           (copy-file source-file output-file)
+           (symlink output-file (string-append output-dir "/00-All.vcf.gz"))))))
+    (home-page "https://www.ncbi.nlm.nih.gov/projects/SNP/")
+    (synopsis "Short genetic variations")
+    (description "")
+    (license #f)))
+
+(define-public 1000genomes-phase1-indels
+  (package
+    (name "1000genomes-phase1-indels")
+    (version "b37")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://"
+                                  "gsapubftp-anonymous@"
+                                  "ftp.broadinstitute.org/bundle/b37/"
+                                  "1000G_phase1.indels.b37.vcf.gz"))
+              (sha256
+               (base32 "173kkmyvyvfa55v2rbpywsrp7159yyl1sx30y243jkxzkjrgc7bc"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let* ((source-file (assoc-ref %build-inputs "source"))
+                (output-dir (string-append %output "/share/1000G"))
+                (output-file-uncompressed (string-append output-dir
+                                            "/1000G_phase1.indels.b37.vcf"))
+                (output-file (string-append output-file-uncompressed ".gz"))
+                (java (string-append (assoc-ref %build-inputs "icedtea")
+                                     "/bin/java"))
+                (igvtools (string-append (assoc-ref %build-inputs "igvtools")
+                                         "/share/java/igvtools/igvtools.jar"))
+                (path (string-append (assoc-ref %build-inputs "htslib") "/bin:"
+                                     (assoc-ref %build-inputs "gzip") "/bin")))
+           ;; The gunzip command needs to find gzip in PATH.
+           (setenv "PATH" path)
+           (mkdir-p output-dir)
+           (copy-file source-file output-file)
+
+           ;; To create the index, we need to compress the VCF file with
+           ;; bgzip, instead of the regular gzip.
+           (system* "gunzip" output-file)
+           (system* "bgzip" output-file-uncompressed)
+
+           ;; Finally, we can index the file using igvtools.
+           (system* java "-jar" igvtools "index" output-file)))))
+    (inputs
+     `(("icedtea" ,icedtea-7)
+       ("igvtools" ,igvtools)
+       ("htslib" ,htslib)
+       ("gzip" ,gzip)))
+    (home-page "http://www.internationalgenome.org/")
+    (synopsis "Initial map of insertions and deletions in the human genome")
+    (description "")
+    (license #f)))
+
+(define-public mills-1000G-gold-standard-indels
+  (package
+    (name "1000genomes-mills-gold-standard-indels")
+    (version "b37")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://"
+                                  "gsapubftp-anonymous@"
+                                  "ftp.broadinstitute.org/bundle/b37/"
+                                  "Mills_and_1000G_gold_standard.indels.b37.vcf.gz"))
+              (sha256
+               (base32 "1n9bf6chfr9pxhk0mfiiqy28pmkyb0xpxz0rwvwrw031cw39dc1l"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let* ((source-file (assoc-ref %build-inputs "source"))
+                (output-dir (string-append %output "/share/1000G"))
+                (output-file-wo-ext
+                 (string-append output-dir
+                                "/Mills_and_1000G_gold_standard.indels.b37"))
+                (bcf-output-file (string-append output-file-wo-ext ".bcf"))
+                (output-file-uncompressed (string-append output-file-wo-ext ".vcf"))
+                (output-file (string-append output-file-uncompressed ".gz"))
+                (java (string-append (assoc-ref %build-inputs "icedtea")
+                                     "/bin/java"))
+                (igvtools (string-append (assoc-ref %build-inputs "igvtools")
+                                         "/share/java/igvtools/igvtools.jar"))
+                (path (string-append (assoc-ref %build-inputs "htslib") "/bin:"
+                                     (assoc-ref %build-inputs "gzip") "/bin:"
+                                     (assoc-ref %build-inputs "bcftools") "/bin:"
+                                     (assoc-ref %build-inputs "grep") "/bin")))
+
+           ;; The gunzip command needs to find gzip in PATH.
+           (setenv "PATH" path)
+           (mkdir-p output-dir)
+           (copy-file source-file output-file)
+
+           ;; To create the index, we need to compress the VCF file with
+           ;; bgzip, instead of the regular gzip.
+           (system* "gunzip" output-file)
+           (chmod output-file-uncompressed #o644)
+
+           ;; The "vcf" file seems to be actually a "bcf" file.  We can use bcftools to
+           ;; convert it to a VCF file.
+           (rename-file output-file-uncompressed bcf-output-file)
+           (system (string-append "bcftools view "
+                                  bcf-output-file
+                                  " | grep -v bcftools_view > "
+                                  output-file-uncompressed))
+
+           (system* "bgzip" output-file-uncompressed)
+           (delete-file bcf-output-file)
+
+           ;; Finally, we can index the file using igvtools.
+           (system* java "-jar" igvtools "index" output-file)))))
+    (inputs
+     `(("icedtea" ,icedtea-7)
+       ("igvtools" ,igvtools)
+       ("htslib" ,htslib)
+       ("gzip" ,gzip)
+       ("bcftools" ,bcftools)
+       ("grep" ,grep)))
+    (home-page "http://www.internationalgenome.org/")
+    (synopsis "Initial map of insertions and deletions in the human genome")
+    (description "")
+    (license #f)))
+
+(define-public dbsnp-138
+  (package
+    (name "dbsnp")
+    (version "138-b37")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://"
+                                  "gsapubftp-anonymous@"
+                                  "ftp.broadinstitute.org/bundle/b37/"
+                                  "dbsnp_138.b37.vcf.gz"))
+              (sha256
+               (base32 "0c7i6qw6j6chhqni826jr98b4kfjg72mql36wdfydiiv7679zx5n"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let* ((source-file (assoc-ref %build-inputs "source"))
+                (output-dir (string-append %output "/share/1000G"))
+                (output-file-uncompressed (string-append output-dir
+                                            "/dbsnp_138.b37.vcf"))
+                (output-file (string-append output-file-uncompressed ".gz"))
+                (java (string-append (assoc-ref %build-inputs "icedtea")
+                                     "/bin/java"))
+                (igvtools (string-append (assoc-ref %build-inputs "igvtools")
+                                         "/share/java/igvtools/igvtools.jar"))
+                (path (string-append (assoc-ref %build-inputs "htslib") "/bin:"
+                                     (assoc-ref %build-inputs "gzip") "/bin")))
+           ;; The gunzip command needs to find gzip in PATH.
+           (setenv "PATH" path)
+           (mkdir-p output-dir)
+           (copy-file source-file output-file)
+
+           ;; To create the index, we need to compress the VCF file with
+           ;; bgzip, instead of the regular gzip.
+           (system* "gunzip" output-file)
+           (system* "bgzip" output-file-uncompressed)
+
+           ;; Finally, we can index the file using igvtools.
+           (system* java "-jar" igvtools "index" output-file)))))
+    (inputs
+     `(("icedtea" ,icedtea-7)
+       ("igvtools" ,igvtools)
+       ("htslib" ,htslib)
+       ("gzip" ,gzip)))
+    (home-page "")
+    (synopsis "")
+    (description "")
+    (license #f)))
+
+(define-public dx-tracks
+  (package
+    (name "dx-tracks")
+    (version "1.2.1")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://github.com/UMCUGenetics/Dx_tracks/releases/"
+                    "download/v" version "/v" version ".tar.gz"))
+              (sha256
+               (base32 "0vcyd888yq6qqal5n9l5g361nzx3wq70zlbn9bhza2qkhfd3n5pp"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let ((tar (string-append (assoc-ref %build-inputs "tar") "/bin/tar"))
+               (input-file (assoc-ref %build-inputs "source"))
+               (output-dir (string-append %output "/share/data/dx-tracks"))
+               (PATH (string-append (assoc-ref %build-inputs "gzip") "/bin")))
+           (setenv "PATH" PATH)
+           (mkdir-p output-dir)
+           (with-directory-excursion output-dir
+             (system* tar "-xvf" input-file "--strip-components=1"))))))
+    (inputs
+     `(("tar" ,tar)
+       ("gzip" ,gzip)))
+    (home-page "https://github.com/UMCUGenetics/Dx_tracks")
+    (synopsis "")
+    (description "")
+    ;; The files are licensed CC-BY-ND.  The NoDerivatives clause makes it
+    ;; non-free, and therefore, the license cannot be added to Guix upstream.
+    (license #f)))
+
+(define-public dbnsfp
+  (package
+    (name "dbnsfp")
+    (version "2.9.3")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "ftp://dbnsfp:dbnsfp@dbnsfp.softgenetics.com/dbNSFPv"
+                    version ".zip"))
+              (sha256
+               (base32
+                "132z7rayqdwc04b8bw19amvwyhg67vyscyv1zrb486r49icf73mz"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let ((source-file (assoc-ref %build-inputs "source"))
+               (output-dir  (string-append %output "/share/dbnsfp"))
+               (unzip       (string-append (assoc-ref %build-inputs "unzip") "/bin/unzip"))
+               (gzip        (string-append (assoc-ref %build-inputs "gzip") "/bin/gzip")))
+           (mkdir-p output-dir)
+           (with-directory-excursion output-dir
+             (system* unzip source-file)
+             (for-each (lambda (file)
+                         (format #t "Compressing ~s~%" file)
+                         (system* gzip file))
+                       (find-files output-dir)))))))
+    (inputs
+     `(("unzip" ,unzip)
+       ("gzip" ,gzip)))
+    (home-page "https://sites.google.com/site/jpopgen/dbNSFP")
+    (synopsis "Database for functional prediction of non-synonymous SNPs")
+    (description " dbNSFP is a database developed for functional prediction and
+annotation of all potential non-synonymous single-nucleotide variants (nsSNVs)
+in the human genome.")
+    (license #f)))
+
+(define-public giab-na12878-high-confidence-regions
+  (package
+    (name "giab-na12878-high-confidence-regions")
+    (version "NISTv3.2.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "ftp://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/release/"
+                    "NA12878_HG001/" version "/NA12878_GIAB_highconf_IllFB"
+                    "-IllGATKHC-CG-Ion-Solid_ALLCHROM_v3.2.2_highconf.bed"))
+              (sha256
+               (base32 "1adj878im498lfplklkir7v2chv1bxamgw3y2a62599wvbhap79q"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let ((source-file (assoc-ref %build-inputs "source"))
+               (output-dir (string-append %output "/share/giab")))
+           (mkdir-p output-dir)
+           (copy-file source-file
+                      (string-append output-dir "/NA12878_GIAB_highconf_IllFB"
+                                     "-IllGATKHC-CG-Ion-Solid_ALLCHROM_v3.2.2"
+                                     "_highconf.bed"))))))
+    (home-page "http://jimb.stanford.edu/giab")
+    (synopsis "")
+    (description "")
+    (license #f)))
+
+(define-public freec-mappability-tracks
+  (package
+    (name "freec-mappability-tracks")
+    (version "hg19_100bp")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://xfer.curie.fr/get/nil/7hZIk1C63h0/"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "1qp05na2lb7w35nqii9gzv4clmppi3hnk5w3kzfpz5sz27fw1lym"))))
+    (build-system trivial-build-system)
+    (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let ((source-file (assoc-ref %build-inputs "source"))
+               (output-dir (string-append %output "/share/freec"))
+               (tar (string-append (assoc-ref %build-inputs "tar") "/bin/tar"))
+               (PATH (string-append (assoc-ref %build-inputs "gzip") "/bin")))
+           (setenv "PATH" PATH)
+           (mkdir-p output-dir)
+           (with-directory-excursion output-dir
+             (system* tar "-xvf" source-file))))))
+    (inputs
+     `(("tar" ,tar)
+       ("gzip" ,gzip)))
+    (home-page "http://boevalab.com/FREEC")
+    (synopsis "")
+    (description "")
+    (license #f)))
+
+(define-public gwascatalog
+  (package
+   (name "gwascatalog")
+   (version "GRCh37")
+   (source (origin
+            (method url-fetch)
+            ;(uri "http://www.genome.gov/admin/gwascatalog.txt")
+            (uri "http://www.roelj.com/gwascatalog.txt")
+            (sha256
+             (base32
+              "137xb3r3w6k8syj6dh6a856fvszcjlylwpzp98m35w5q52vxhdnx"))))
+   (build-system trivial-build-system)
+   (arguments
+    `(#:modules ((guix build utils))
+      #:builder
+      (begin
+        (use-modules (guix build utils))
+        (let ((source-file (assoc-ref %build-inputs "source"))
+              (output-dir (string-append %output "/share/gwascatalog")))
+          (mkdir-p output-dir)
+          (copy-file source-file
+                     (string-append output-dir "/gwascatalog.txt"))))))
+   (home-page "http://www.genome.gov/")
+   (synopsis "Extra data sets used by snpEff.")
+   (description "This package contains extra data sets used by snpEff.")
+   (license #f)))
+
+(define-public gnomad-sv-sites-2.1
+  (package
+   (name "gnomad-sv-sites")
+   (version "2.1")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append
+                  "https://storage.googleapis.com/gnomad-public/"
+                  "papers/2019-sv/gnomad_v" version "_sv.sites.vcf.gz"))
+            (sha256
+             (base32
+              "18gxfnar8n5r06mj0ykyq4fkw3q3qqbrfnprgi18db0xzf6lh94k"))))
+   (build-system trivial-build-system)
+   (arguments
+     `(#:modules ((guix build utils))
+       #:builder
+       (begin
+         (use-modules (guix build utils))
+         (let ((gzip     (string-append (assoc-ref %build-inputs "gzip") "/bin/gzip"))
+               (sv-sites (assoc-ref %build-inputs "source"))
+               (out      (string-append %output "/share/gnomad")))
+           (mkdir-p out)
+           (with-directory-excursion out
+             (zero? (system
+                     (string-append
+                      gzip " -d " sv-sites
+                      " -c > gnomad_v2.1_sv.sites.vcf"))))))))
+   (inputs `(("gzip" ,gzip)))
+   (home-page "https://gnomad.broadinstitute.org")
+   (synopsis "gnomAD structural variant sites")
+   (description "This package provides in uncompressed version of the gnomAD
+ structural variant sites.")
+   (license license:cc0)))
+
+(define-public impute2-bin
+  (package
+    (name "impute2")
+    (version "2.3.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://mathgen.stats.ox.ac.uk/impute/impute_v"
+                    version "_x86_64_static.tgz"))
+              (sha256
+               (base32 "0py4m0asp1459nn1xsv552n3azqcfhipa4si8bzxs1a58q05jqcm"))))
+    (supported-systems '("x86_64-linux"))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:tests? #f
+       #:phases
+       (modify-phases %standard-phases
+         (delete 'configure)
+         (delete 'build)
+         (replace 'install
+           (lambda _
+             (let ((out (string-append (assoc-ref %outputs "out") "/bin")))
+               (install-file "impute2" out)))))))
+    (home-page "https://mathgen.stats.ox.ac.uk/impute/impute_v2.html")
+    (synopsis "")
+    (description "")
+    (license #f)))
