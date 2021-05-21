@@ -269,11 +269,17 @@ capable of taking on projects of any size.")
     (source
      (origin
        (method url-fetch)
+       ;; There is no version available without jdk, so use it and deblob.
        (uri (string-append
              "http://data.broadinstitute.org/igv/projects/downloads/"
-             "2.8/IGV_Linux_" version ".zip"))
+             "2.8/IGV_Linux_" version "_WithJava.zip"))
        (sha256
-        (base32 "1qrhsvl6z5h1kg3pji08fzqj08c6l2lxj0qv7hbvys3mymz4lfzv"))))
+        (base32 "017q32lnbfz5gsvak1dfa0anzg1g0h34mkjxcggyq8ncr0vq4s7v"))
+       (modules '((guix build utils)))
+       (snippet
+        `(begin
+           (delete-file-recursively "jdk-11")
+           #t))))
     (build-system gnu-build-system)
     (propagated-inputs
      `(("openjdk11" ,openjdk11)))
