@@ -1,0 +1,16 @@
+*** a/snpEff.config	2018-02-27 12:15:01.826164689 +0100
+--- b/snpEff.config	2018-02-27 12:14:48.117912629 +0100
+***************
+*** 124,129 ****
+--- 124,134 ----
+  # Non-standard Databases
+  #---
+  
++ # Backported from the v4.1 configuration.
++ GRCh37.74.genome : Homo_sapiens
++ GRCh37.74.reference : ftp://ftp.ensembl.org/pub/release-74/gtf/
++ GRCh37.74.MT.codonTable : Vertebrate_Mitochondrial
++ 
+  # Ebola virus
+  ebola_zaire.genome: Ebola Zaire Virus KJ660346.1
+  

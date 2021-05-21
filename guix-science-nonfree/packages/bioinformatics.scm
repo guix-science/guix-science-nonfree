@@ -16,6 +16,7 @@
 
 (define-module (guix-science-nonfree packages bioinformatics)
   #:use-module ((guix licenses) #:prefix license:)
+  #:use-module (guix-science-nonfree licenses)
   #:use-module (gnu packages)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages perl)
@@ -23,8 +24,16 @@
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bioinformatics)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages java)
   #:use-module (gnu packages commencement)
+  #:use-module (gnu packages statistics)
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages cran)
+  #:use-module (gnu packages bioconductor)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system r)
+  #:use-module (guix build-system ant)
+  #:use-module (guix build-system trivial)
   #:use-module (guix download)
   #:use-module (guix git-download)
   #:use-module (guix packages)
@@ -964,9 +973,7 @@ as efficiently and effectively as possible.")
     (home-page "https://github.com/UMCUGenetics/Dx_tracks")
     (synopsis "")
     (description "")
-    ;; The files are licensed CC-BY-ND.  The NoDerivatives clause makes it
-    ;; non-free, and therefore, the license cannot be added to Guix upstream.
-    (license #f)))
+    (license cc-by-nd4.0)))
 
 (define-public dbnsfp
   (package
