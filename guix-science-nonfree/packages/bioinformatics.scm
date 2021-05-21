@@ -696,7 +696,7 @@ acid changes).")
    (source (origin
             (method url-fetch)
             (uri (string-append
-                  "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"))
+                  "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/weekly/clinvar_20200919.vcf.gz"))
             (sha256
              (base32
 	      "06wdfg6wkksra4if1hil78p9707l9zq8h74cc4mpqrhl1vv8j8sq"))))
@@ -734,7 +734,7 @@ as efficiently and effectively as possible.")
     (source (origin
              (method url-fetch)
              (uri (string-append
-                   "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/clinvar.vcf.gz"))
+                   "ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh37/weekly/clinvar_20200919.vcf.gz"))
              (sha256
               (base32
                "0srdr8mwf2wnch8v5gkdj0lqqmm50inzysh9cb4gb7ndrbwhharv"))))
