@@ -18,6 +18,7 @@
 
 (define-module (guix-science-nonfree packages gurobi)
   #:use-module (guix build-system python)
+  #:use-module (guix-science-nonfree licenses)
   #:use-module (guix packages)
   #:use-module (guix download) ;; url-fetch
   #:use-module (guix git) ;; git-checkout
@@ -47,10 +48,9 @@
                                     ;; copy and symlink gurobi binary and adjust python lib rpath
                                     ;; to look for it in it's own directory.
                                     (add-after 'install 'install-gurobi-library
-                                      (lambda* (#:key outputs #:allow-other-keys)
-                                        (let* ((dir (string-append (assoc-ref outputs "out")
-                                                                   "/lib/python3.8/site-packages/gurobipy/"))
-                                               ;; this-package seems to delay evaluation so version is taken from inherited package
+                                      (lambda* (#:key inputs outputs #:allow-other-keys)
+                                        (let* ((dir (string-append (site-packages inputs outputs)
+                                                                   "gurobipy/"))
                                                (lib-to-install (string-append "libgurobi.so." ,(package-version this-package)))
                                                (softlink-version (string-split ,(package-version this-package) #\.))
                                                (softlink-lib (string-append
@@ -65,9 +65,9 @@
                                             (invoke "chmod" "-v" "+w" lib-change-rpath)
                                             (invoke "patchelf" "--debug" "--set-rpath" "$ORIGIN" lib-change-rpath)
                                             (invoke "chmod" "-v" "-w" lib-change-rpath))))))))
-    (home-page "https://www.gurobi.com/downloads/gurobi-software/")
+    (home-page "https://www.gurobi.com/products/gurobi-optimizer/")
     (synopsis
-     "Python wrapper around Gurobi Solver")
+     "Python interface to the Gurobi Optimizer.")
     (description
-     "See here for more info: https://www.gurobi.com/documentation/9.1/quickstart_linux/cs_python.html")
-    (license #f)))
+     "The Gurobi Optimizer is a commercial optimization solver for linear programming (LP), quadratic programming (QP), quadratically constrained programming (QCP), mixed integer linear programming (MILP), mixed-integer quadratic programming (MIQP), and mixed-integer quadratically constrained programming (MIQCP).  See here for more info: @url{https://www.gurobi.com/documentation/9.0/quickstart_linux/cs_python.html}.")
+    (license (nonfree "https://www.gurobi.com/products/licensing-options/"))))
