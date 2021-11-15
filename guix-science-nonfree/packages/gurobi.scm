@@ -30,8 +30,8 @@
     (source (origin
               (method url-fetch)
               (uri (string-append "https://packages.gurobi.com/"
-				  (substring version 0 3) "/gurobi"
-				  version "_linux64.tar.gz"))
+                                  (substring version 0 3) "/gurobi"
+                                  version "_linux64.tar.gz"))
               (sha256
                (base32
                 "1dvcz0ph17y7dlsn2z5akzhbnc32f6wd1ppfc7p0w60il76zmqhp"))))
@@ -40,31 +40,31 @@
      `(("patchelf" ,patchelf)))
     (arguments ;;(gurobi-package-arguments version))
      `(#:use-setuptools? #f ;; distuils package
-			 #:tests? #f ;; no tests in package
-			 #:phases (modify-phases %standard-phases
-				    (add-after 'unpack 'cd-to-source-dir
-				      (lambda _ (chdir "linux64") #t))
-				    ;; copy and symlink gurobi binary and adjust python lib rpath
-				    ;; to look for it in it's own directory.
-				    (add-after 'install 'install-gurobi-library
-				      (lambda* (#:key outputs #:allow-other-keys)
-					(let* ((dir (string-append (assoc-ref outputs "out")
-								   "/lib/python3.8/site-packages/gurobipy/"))
-					       ;; this-package seems to delay evaluation so version is taken from inherited package
-					       (lib-to-install (string-append "libgurobi.so." ,(package-version this-package)))
-					       (softlink-version (string-split ,(package-version this-package) #\.))
-					       (softlink-lib (string-append
-							      "libgurobi"
-							      (car softlink-version)
-							      (cadr softlink-version)
-							      ".so"))
-					       (lib-change-rpath "gurobipy.so"))
-					  (install-file (string-append "lib/" lib-to-install) dir)
-					  (with-directory-excursion dir
-					    (symlink lib-to-install softlink-lib)
-					    (invoke "chmod" "-v" "+w" lib-change-rpath)
-					    (invoke "patchelf" "--debug" "--set-rpath" "$ORIGIN" lib-change-rpath)
-					    (invoke "chmod" "-v" "-w" lib-change-rpath))))))))
+                         #:tests? #f ;; no tests in package
+                         #:phases (modify-phases %standard-phases
+                                    (add-after 'unpack 'cd-to-source-dir
+                                      (lambda _ (chdir "linux64") #t))
+                                    ;; copy and symlink gurobi binary and adjust python lib rpath
+                                    ;; to look for it in it's own directory.
+                                    (add-after 'install 'install-gurobi-library
+                                      (lambda* (#:key outputs #:allow-other-keys)
+                                        (let* ((dir (string-append (assoc-ref outputs "out")
+                                                                   "/lib/python3.8/site-packages/gurobipy/"))
+                                               ;; this-package seems to delay evaluation so version is taken from inherited package
+                                               (lib-to-install (string-append "libgurobi.so." ,(package-version this-package)))
+                                               (softlink-version (string-split ,(package-version this-package) #\.))
+                                               (softlink-lib (string-append
+                                                              "libgurobi"
+                                                              (car softlink-version)
+                                                              (cadr softlink-version)
+                                                              ".so"))
+                                               (lib-change-rpath "gurobipy.so"))
+                                          (install-file (string-append "lib/" lib-to-install) dir)
+                                          (with-directory-excursion dir
+                                            (symlink lib-to-install softlink-lib)
+                                            (invoke "chmod" "-v" "+w" lib-change-rpath)
+                                            (invoke "patchelf" "--debug" "--set-rpath" "$ORIGIN" lib-change-rpath)
+                                            (invoke "chmod" "-v" "-w" lib-change-rpath))))))))
     (home-page "https://www.gurobi.com/downloads/gurobi-software/")
     (synopsis
      "Python wrapper around Gurobi Solver")
