@@ -1,5 +1,5 @@
 ;;; Copyright © 2016-2021 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bioinformatics)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages python)
   #:use-module (gnu packages java)
   #:use-module (gnu packages commencement)
@@ -1174,3 +1175,22 @@ sequences with a predefined structure (inverse folding) is provided.")
      (nonfree
       "https://github.com/ViennaRNA/ViennaRNA/blob/master/COPYING"
       "license forbids commercial usage"))))
+
+(define-public viennarna-1.8
+  (package (inherit viennarna)
+    (version "1.8.5")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "http://www.tbi.univie.ac.at/RNA/download/sourcecode/"
+                    "1_8_x/ViennaRNA-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1ygcs399xl07igj15ynfg6cd9ifi1amy8n0p6bl6awgpx95xkqpl"))))
+    (arguments
+     `(#:tests? #f ; no tests
+       #:configure-flags
+       (list "--without-perl"
+	     "CFLAGS=-std=gnu89 -fcommon")))
+    (inputs '())
+    (native-inputs (list gcc-6))))
