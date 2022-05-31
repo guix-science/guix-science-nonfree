@@ -19,7 +19,6 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix-science-nonfree packages bioconductor)
-  #:use-module ((guix licenses) #:prefix license:)
   #:use-module ((guix licenses-nonfree) #:prefix nonfree:)
   #:use-module (guix packages)
   #:use-module (guix download)
@@ -58,8 +57,8 @@
 frequency matrices from 14 public sources, for multiple organisms.")
     ;; It's complicated... the data from public sources are under
     ;; different licenses; some are not licensed at all.
-    (license (nonfree:non-free
-              "https://bioconductor.org/packages/release/bioc/licenses/MotifDb/LICENSE"))))
+    (license
+     (nonfree "https://bioconductor.org/packages/release/bioc/licenses/MotifDb/LICENSE"))))
 
 (define-public r-rankprod
   (package
@@ -81,4 +80,6 @@ frequency matrices from 14 public sources, for multiple organisms.")
 regulated) genes based on the estimated percentage of false predictions (pfp).
 The method can combine data sets from different origins (meta-analysis) to
 increase the power of the identification.")
-    (license (nonfree:non-free "Non-commercial"))))
+    (license
+     (nonfree "https://bioconductor.org/packages/release/bioc/licenses/RankProd/LICENSE"
+              "Non-commercial"))))
