@@ -18,8 +18,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix-science-nonfree packages cran)
-  #:use-module ((guix licenses) #:prefix license:)
-  #:use-module ((guix licenses-nonfree) #:prefix nonfree:)
+  #:use-module (guix-science-nonfree licenses)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix utils)
@@ -51,4 +50,6 @@ package, both for the bivariate case and univariate case.  Linear
 interpolation of irregular gridded data is also covered.  A bilinear
 interpolator for regular grids was also added for comparison with the bicubic
 interpolator on regular grids.")
-    (license (nonfree:non-free "Non-commercial, ACM"))))
+    (license
+     (nonfree "https://cran.r-project.org/web/packages/akima/LICENSE"
+              "Non-commercial, ACM"))))
