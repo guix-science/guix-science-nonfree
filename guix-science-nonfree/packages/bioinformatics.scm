@@ -159,25 +159,6 @@ indels from the aligned sequencing reads of matched tumor-normal samples")
      `(("vcftools" ,vcftools)
        ("htslib" ,htslib)))))
 
-(define-public r-gsalib
-  (package
-   (name "r-gsalib")
-   (version "2.1")
-   (source
-    (origin
-     (method url-fetch)
-     (uri (cran-uri "gsalib" version))
-     (sha256
-      (base32
-       "1k3zjdydzb0dfh1ihih08d4cw6rdamgb97cdqna9mf0qdjc3pcp1"))))
-   (build-system r-build-system)
-   (home-page "http://cran.r-project.org/web/packages/gsalib")
-   (synopsis "Utility Functions For GATK")
-   (description "This package contains utility functions used by the Genome
-Analysis Toolkit (GATK) to load tables and plot data.  The GATK is a toolkit
-for variant discovery in high-throughput sequencing data.")
-   (license license:expat)))
-
 (define-public gatk-bin-3.8.1-no-intel-deflation
   (package
     (name "gatk")
