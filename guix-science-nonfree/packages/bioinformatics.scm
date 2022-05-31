@@ -270,6 +270,7 @@ capable of taking on projects of any size.")
      (origin
        (method url-fetch)
        ;; There is no version available without jdk, so use it and deblob.
+       ;; The source code is available at https://github.com/igvteam/igv/
        (uri (string-append
              "http://data.broadinstitute.org/igv/projects/downloads/"
              "2.8/IGV_Linux_" version "_WithJava.zip"))
@@ -319,8 +320,7 @@ capable of taking on projects of any size.")
 visualization tool for interactive exploration of large, integrated genomic
 datasets.  It supports a wide variety of data types, including array-based and
 next-generation sequence data, and genomic annotations.")
-   ;; No license specified.
-   (license license:non-copyleft)))
+   (license license:expat)))
 
 (define-public igvtools
   (package
