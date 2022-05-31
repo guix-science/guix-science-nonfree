@@ -1,5 +1,5 @@
-;;;
 ;;; Copyright © 2016-2021 Roel Janssen <roel@gnu.org>
+;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages cran)
   #:use-module (gnu packages bioconductor)
+  #:use-module (gnu packages swig)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system r)
   #:use-module (guix build-system ant)
@@ -1122,3 +1123,54 @@ in the human genome.")
  or protein FASTA files.")
    ;; No license was specified.
    (license #f)))
+
+(define-public viennarna
+  (package
+    (name "viennarna")
+    (version "2.4.18")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/ViennaRNA/ViennaRNA"
+                                  "/releases/download/v" version "/ViennaRNA-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0z35d59hkc2ynb7rh6np2kbgx9ignasm09r7r0hlisivgknwyxmj"))))
+    (build-system gnu-build-system)
+    (arguments
+     ;; Disable link-time optimization because this creates problems
+     ;; when stripping.  Linking with the stripped static library
+     ;; would fail when LTO is enabled.  See the discussion here:
+     ;; https://github.com/s-will/LocARNA/issues/7
+     `(#:configure-flags '("--disable-lto")
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'check 'set-search-path
+           (lambda _
+             ;; Work around test failure.
+             (setenv "PERL5LIB"
+                     (string-append (getcwd) "/tests:"
+                                    (getenv "PERL5LIB"))))))))
+    (inputs
+     (list perl python))
+    (native-inputs
+     (list swig))
+    (home-page "http://www.tbi.univie.ac.at/RNA/index.html")
+    (synopsis "Prediction and comparison of RNA secondary structures")
+    (description
+     "RNA secondary structure prediction through energy minimization is the
+most used function in the package.  Three kinds of dynamic programming
+algorithms for structure prediction are provided: the minimum free energy
+algorithm of Zuker & Stiegler (1981) which yields a single optimal structure,
+the partition function algorithm of McCaskill (1990) which calculates base
+pair probabilities in the thermodynamic ensemble, and the suboptimal folding
+algorithm of Wuchty et.al (1999) which generates all suboptimal structures
+within a given energy range of the optimal energy.  For secondary structure
+comparison, the package contains several measures of
+distance (dissimilarities) using either string alignment or
+tree-editing (Shapiro & Zhang 1990).  Finally, an algorithm to design
+sequences with a predefined structure (inverse folding) is provided.")
+    (license
+     (nonfree
+      "https://github.com/ViennaRNA/ViennaRNA/blob/master/COPYING"
+      "license forbids commercial usage"))))
