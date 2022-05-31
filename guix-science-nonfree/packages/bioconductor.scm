@@ -19,7 +19,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix-science-nonfree packages bioconductor)
-  #:use-module ((guix licenses-nonfree) #:prefix nonfree:)
+  #:use-module (guix-science-nonfree licenses)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix utils)
