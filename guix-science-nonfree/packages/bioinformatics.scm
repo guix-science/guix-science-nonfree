@@ -1176,6 +1176,35 @@ sequences with a predefined structure (inverse folding) is provided.")
       "https://github.com/ViennaRNA/ViennaRNA/blob/master/COPYING"
       "license forbids commercial usage"))))
 
+(define-public viennarna-2.2.8
+  (package (inherit viennarna)
+    (version "2.2.8")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "http://www.tbi.univie.ac.at/RNA/packages/source/ViennaRNA-"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "0b9h3rrndxjvj3r2wyixf095fghpspgiwx3acbd8hlv3lj6hpi1h"))))
+    (arguments
+     ;; Disable link-time optimization because this creates problems
+     ;; when stripping.  Linking with the stripped static library
+     ;; would fail when LTO is enabled.  See the discussion here:
+     ;; https://github.com/s-will/LocARNA/issues/7
+     `(#:configure-flags '("--disable-lto"
+                           "CFLAGS=-fcommon")
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'check 'set-search-path
+           (lambda _
+             ;; Work around test failure.
+             (setenv "PERL5LIB"
+                     (string-append (getcwd) "/tests:"
+                                    (getenv "PERL5LIB"))))))))
+    (native-inputs
+     (list swig))))
+
 (define-public viennarna-1.8
   (package (inherit viennarna)
     (version "1.8.5")
