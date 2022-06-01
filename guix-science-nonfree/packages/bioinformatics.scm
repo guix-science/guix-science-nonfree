@@ -1220,6 +1220,6 @@ sequences with a predefined structure (inverse folding) is provided.")
      `(#:tests? #f ; no tests
        #:configure-flags
        (list "--without-perl"
-	     "CFLAGS=-std=gnu89 -fcommon")))
+	         "CFLAGS=-std=gnu89 -fcommon")))
     (inputs '())
     (native-inputs (list gcc-6))))
