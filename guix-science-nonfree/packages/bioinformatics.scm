@@ -1254,3 +1254,28 @@ sequences with a predefined structure (inverse folding) is provided.")
 MXSCARNA and ProbConsRNA.")
     ;; FIXME: this is probably inaccurate.
     (license (package-license viennarna))))
+
+(define-public cofold
+  (package
+    (inherit viennarna-1.8)
+    (name "cofold")
+    (version "1.0")
+    (source (origin
+              (method url-fetch)
+              ;; XXX uggh there's no versioning for this tarball,
+              ;; should migrate it to git-based fetching asap.
+              (uri (string-append "http://www.e-rna.org/cofold/CoFold.tar.gz"))
+              (sha256
+               (base32
+                "1hr1hnm3nxj0y6yd94wxiqw10y653wyr6prl9i02a27bd6c27gbz"))))
+    (arguments
+     `(#:tests? #f ; there are no tests
+       #:parallel-build? #f)) ; build fails otherwise
+    (synopsis "Predict RNA secondary structure considering co-transcriptional folding")
+    (description "CoFold is a thermodynamics-based RNA secondary
+structure folding algorithm that takes co-transcriptional folding in
+account.  This has been shown to significantly improve the
+state-of-art in terms of prediction accuracy, especially for long
+sequences greater than 1000 nt in length.")
+    (home-page "http://www.e-rna.org/cofold/")
+    (license (package-license viennarna-1.8))))
