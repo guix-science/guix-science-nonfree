@@ -37,6 +37,7 @@
   #:use-module (guix build-system ant)
   #:use-module (guix build-system trivial)
   #:use-module (guix download)
+  #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix utils))
@@ -1223,3 +1224,33 @@ sequences with a predefined structure (inverse folding) is provided.")
 	         "CFLAGS=-std=gnu89 -fcommon")))
     (inputs '())
     (native-inputs (list gcc-6))))
+
+;; This is non-free because it contains ViennaRNA code, which is
+;; released under a non-free license.
+(define-public mafft-extensions
+  (package (inherit mafft)
+    (version (package-version mafft))
+    (name "mafft-extensions")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "http://mafft.cbrc.jp/alignment/software/mafft-"
+                                  version "-with-extensions-src.tgz"))
+              (sha256
+               (base32
+                "06gk8csbx3fdsz18mizxl51iazlb5jfmn6l6sgxqr8cy12p76sdv"))))
+    (arguments
+     `(#:tests? #f ; no tests included
+       #:make-flags
+       ,#~(list (string-append "PREFIX=" #$output)
+                (string-append "BINDIR=" #$output "/bin"))
+       #:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'enter-dir
+           (lambda _ (chdir "extensions")))
+         (delete 'configure))))
+    (synopsis "Extensions for the MAFFT multiple sequence alignment package")
+    (description
+     "The extensions code includes code of the ViennaRNA package,
+MXSCARNA and ProbConsRNA.")
+    ;; FIXME: this is probably inaccurate.
+    (license (package-license viennarna))))
