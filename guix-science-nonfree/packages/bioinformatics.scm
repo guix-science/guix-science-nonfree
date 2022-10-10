@@ -374,7 +374,7 @@ next-generation sequence data, and genomic annotations.")
 It annotates and predicts the effects of variants on genes (such as amino
 acid changes).")
    ;; No license specified.
-   (license license:non-copyleft)))
+   (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public snpeff-bin-4.1h
  (package (inherit snpeff-bin-4.1)
