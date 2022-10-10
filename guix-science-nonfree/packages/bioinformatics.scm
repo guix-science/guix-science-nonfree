@@ -601,7 +601,9 @@ acid changes).")
       (description "")
       ;; Free for non-commercial use by academic, government, and
       ;; non-profit/not-for-profit institutions
-      (license license:non-copyleft))))
+      (license (license:non-copyleft
+                "https://raw.githubusercontent.com/dkoboldt/\
+varscan/master/VarScan.v2.4.0.description.txt")))))
 
 (define-public varscan-2.4.0
   (varscan "2.4.0" "ed3227992f31725548d6106dc7fcd0bd8879ff1e"
