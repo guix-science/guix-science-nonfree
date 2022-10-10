@@ -143,7 +143,9 @@
 indels from the aligned sequencing reads of matched tumor-normal samples")
     ;; WARNING: The license is "Illumina Open Source Software License 1".
     ;; This effectively makes it nonfree software.
-    (license license:non-copyleft)))
+    (license (license:non-copyleft
+              "https://github.com/Illumina/licenses/blob/master/\
+Illumina%20Public%20License%201.pdf"))))
 
 (define-public strelka-1.0.14
   (package (inherit strelka-1.0.15)
