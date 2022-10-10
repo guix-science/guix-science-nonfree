@@ -654,7 +654,8 @@ for interactive users as well as those wishing to use ClinVar in daily
 workflows and other local applications.  ClinVar works in collaboration with
 interested organizations to meet the needs of the medical genetics community
 as efficiently and effectively as possible.")
-   (license #f)))
+   ;; No license specified.
+   (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public clinvar-grch37
   (package (inherit clinvar)
@@ -702,7 +703,8 @@ as efficiently and effectively as possible.")
     (home-page "https://www.ncbi.nlm.nih.gov/projects/SNP/")
     (synopsis "Short genetic variations")
     (description "")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public 1000genomes-phase1-indels
   (package
@@ -753,7 +755,8 @@ as efficiently and effectively as possible.")
     (home-page "http://www.internationalgenome.org/")
     (synopsis "Initial map of insertions and deletions in the human genome")
     (description "")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public mills-1000G-gold-standard-indels
   (package
@@ -823,7 +826,8 @@ as efficiently and effectively as possible.")
     (home-page "http://www.internationalgenome.org/")
     (synopsis "Initial map of insertions and deletions in the human genome")
     (description "")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public dbsnp-138
   (package
@@ -874,7 +878,8 @@ as efficiently and effectively as possible.")
     (home-page "")
     (synopsis "")
     (description "")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public dx-tracks
   (package
@@ -946,7 +951,8 @@ as efficiently and effectively as possible.")
     (description " dbNSFP is a database developed for functional prediction and
 annotation of all potential non-synonymous single-nucleotide variants (nsSNVs)
 in the human genome.")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public giab-na12878-high-confidence-regions
   (package
@@ -976,7 +982,8 @@ in the human genome.")
     (home-page "http://jimb.stanford.edu/giab")
     (synopsis "")
     (description "")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public freec-mappability-tracks
   (package
@@ -1010,7 +1017,8 @@ in the human genome.")
     (home-page "http://boevalab.com/FREEC")
     (synopsis "")
     (description "")
-    (license #f)))
+    ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public gwascatalog
   (package
@@ -1037,7 +1045,8 @@ in the human genome.")
    (home-page "http://www.genome.gov/")
    (synopsis "Extra data sets used by snpEff.")
    (description "This package contains extra data sets used by snpEff.")
-   (license #f)))
+   ;; No license specified.
+   (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public gnomad-sv-sites-2.1
   (package
@@ -1099,7 +1108,10 @@ in the human genome.")
     (home-page "https://mathgen.stats.ox.ac.uk/impute/impute_v2.html")
     (synopsis "")
     (description "")
-    (license #f)))
+    ;; Non-commercial use only
+    (license (license:non-copyleft
+              "http://web.archive.org/web/20170915131927/\
+http://www.stats.ox.ac.uk/~marchini/software/gwas/gwas.html#licence"))))
 
 (define-public scan_for_matches
   (package
@@ -1127,8 +1139,8 @@ in the human genome.")
    (synopsis "Utility for locating patterns in DNA")
    (description "This package provides a utility for locating patterns in DNA
  or protein FASTA files.")
-   ;; No license was specified.
-   (license #f)))
+   ;; No license specified.
+    (license (license:non-copyleft "file:///dev/null"))))
 
 (define-public viennarna
   (package
