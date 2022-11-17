@@ -18,12 +18,14 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix-science-nonfree licenses)
   #:use-module (gnu packages)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bioinformatics)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
   #:use-module (gnu packages java)
   #:use-module (gnu packages commencement)
@@ -1295,3 +1297,35 @@ state-of-art in terms of prediction accuracy, especially for long
 sequences greater than 1000 nt in length.")
     (home-page "http://www.e-rna.org/cofold/")
     (license (package-license viennarna-1.8))))
+
+;; This is free software, but it depends on the non-free ViennaRNA, so
+;; we can't distribute it as part of the official Guix channels.
+(define-public intarna
+  (package
+    (name "intarna")
+    (version "3.3.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/BackofenLab/IntaRNA"
+                                  "/releases/download/v" version
+                                  "/intaRNA-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1lcfx13xg74cli724d4ygqz2g2ahp5054ihnwcv2ddmnbgx77ljp"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list (string-append "--with-boost-libdir="
+                             #$(this-package-input "boost") "/lib"))))
+    (native-inputs
+     (list catch2-1 pkg-config))
+    (inputs
+     (list boost viennarna zlib))
+    (home-page "https://github.com/BackofenLab/IntaRNA")
+    (synopsis "Efficient RNA-RNA interaction prediction")
+    (description "IntaRNA is a general and fast approach to the
+prediction of RNA-RNA interactions incorporating both the
+accessibility of interacting sites as well as the existence of a
+user-definable seed interaction.")
+    (license license:expat)))
