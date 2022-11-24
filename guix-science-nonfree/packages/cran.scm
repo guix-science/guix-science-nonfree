@@ -1,5 +1,6 @@
 ;;; GNU Guix --- Functional package management for GNU
 ;;; Copyright © 2022 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2022 Navid Afkhami <navid.afkhami@mdc-berlin.de>
 ;;;
 ;;; This file is NOT part of GNU Guix, but is supposed to be used with GNU
 ;;; Guix and thus has the same license.
@@ -18,6 +19,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (guix-science-nonfree packages cran)
+  #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix-science-nonfree licenses)
   #:use-module (guix packages)
   #:use-module (guix download)
@@ -25,7 +27,8 @@
   #:use-module (guix build-system r)
   #:use-module (gnu packages)
   #:use-module (gnu packages cran)
-  #:use-module (gnu packages gcc))
+  #:use-module (gnu packages gcc)
+  #:use-module (gnu packages statistics))
 
 (define-public r-akima
   (package
@@ -53,3 +56,29 @@ interpolator on regular grids.")
     (license
      (nonfree "https://cran.r-project.org/web/packages/akima/LICENSE"
               "Non-commercial, ACM"))))
+
+;; This is free software, but it depends on FACTS, which is not.
+(define-public r-rfacts
+  (package
+    (name "r-rfacts")
+    (version "0.2.1")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "rfacts" version))
+              (sha256
+               (base32
+                "0h2ryyl5zc3pxi85y0qwadfz7sdzz0m6ilwzabw317sb0z5lms5b"))))
+    (properties `((upstream-name . "rfacts")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-digest r-fs r-tibble r-xml2))
+    (native-inputs (list r-knitr))
+    (home-page "https://elilillyco.github.io/rfacts/")
+    (synopsis "Tool for invoking FACTS to run clinical trial simulations")
+    (description
+     "The rfacts package is an R interface to the Fixed and Adaptive
+Clinical Trial Simulator @code{FACTS}.  It programmatically invokes
+@code{FACTS} to run clinical trial simulations.  It aggregates
+simulation output data into tidy data frames.  These capabilities
+provide end-to-end automation for large-scale simulation pipelines,
+and they enhance computational reproducibility.")
+    (license license:expat)))
