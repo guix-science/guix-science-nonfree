@@ -53,3 +53,29 @@ interpolator on regular grids.")
     (license
      (nonfree "https://cran.r-project.org/web/packages/akima/LICENSE"
               "Non-commercial, ACM"))))
+
++(define-public r-rfacts
+  (package
+    (name "r-rfacts")
+    (version "0.2.1")
+    (source (origin
+              (method url-fetch)
+              (uri (cran-uri "rfacts" version))
+              (sha256
+               (base32
+                "0h2ryyl5zc3pxi85y0qwadfz7sdzz0m6ilwzabw317sb0z5lms5b"))))
+    (properties `((upstream-name . "rfacts")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-digest r-fs r-tibble r-xml2))
+    (native-inputs (list r-knitr))
+    (home-page "https://elilillyco.github.io/rfacts/")
+    (synopsis "Tool for invoking FACTS to run clinical trial simulations")
+    (description
+     "The rfacts package is an R interface to the Fixed and Adaptive
+Clinical Trial         Simulator @code{FACTS}. It programmatically
+invokes @code{FACTS} to run clinical trial simulations.It
+aggregates simulation output data into tidy data frames. These
+capabilities provide end-to-end automation for large-scale simulation
+pipelines, and they enhance computational reproducibility.")   
+
+    (license license:expat)))
