@@ -34,9 +34,13 @@
   #:use-module (gnu packages cran)
   #:use-module (gnu packages bioconductor)
   #:use-module (gnu packages swig)
+  #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages python-science)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system r)
   #:use-module (guix build-system ant)
+  #:use-module (guix build-system python)
+  #:use-module (guix build-system pyproject)
   #:use-module (guix build-system trivial)
   #:use-module (guix download)
   #:use-module (guix gexp)
@@ -1329,3 +1333,40 @@ prediction of RNA-RNA interactions incorporating both the
 accessibility of interacting sites as well as the existence of a
 user-definable seed interaction.")
     (license license:expat)))
+
+(define-public python-chess-hic
+  (package
+    (name "python-chess-hic")
+    (version "0.3.7")
+    (source (origin
+              (method url-fetch)
+              (uri (pypi-uri "chess-hic" version))
+              (sha256
+               (base32
+                "121w8p67hlhbr7p8xzwsh2mwf88svy1ck5169zyn801kd5llznkk"))))
+    (build-system pyproject-build-system)
+    (arguments '(#:tests? #false)) ;there are none
+    (propagated-inputs
+     (list python-cython
+           python-fanc
+           python-future
+           python-intervaltree
+           python-kneed
+           python-numpy
+           python-msgpack
+           python-pandas
+           python-pathos
+           python-pybedtools
+           python-scikit-image
+           python-scipy
+           python-tqdm))
+    (home-page "https://github.com/vaquerizaslab/chess")
+    (synopsis "Feature extraction for chromatin contact data")
+    (description
+     "This package is a command line tool for the quantitative
+comparison and automatic feature extraction for chromatin contact
+data.")
+    ;; Non-commercial use only
+    (license
+     (nonfree
+      "https://raw.githubusercontent.com/vaquerizaslab/chess/master/LICENSE"))))
