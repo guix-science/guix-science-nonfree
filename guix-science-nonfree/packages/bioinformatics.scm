@@ -1199,6 +1199,18 @@ sequences with a predefined structure (inverse folding) is provided.")
       "https://github.com/ViennaRNA/ViennaRNA/blob/master/COPYING"
       "license forbids commercial usage"))))
 
+(define-public viennarna-2.4
+  (package (inherit viennarna)
+    (version "2.4.18")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://github.com/ViennaRNA/ViennaRNA"
+                                  "/releases/download/v" version "/ViennaRNA-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0z35d59hkc2ynb7rh6np2kbgx9ignasm09r7r0hlisivgknwyxmj"))))))
+
 (define-public viennarna-2.2.8
   (package (inherit viennarna)
     (version "2.2.8")
