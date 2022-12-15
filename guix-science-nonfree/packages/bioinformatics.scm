@@ -28,6 +28,7 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cran)
   #:use-module (gnu packages gcc)
+  #:use-module (gnu packages image)
   #:use-module (gnu packages java)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
@@ -622,6 +623,43 @@ varscan/master/VarScan.v2.4.0.description.txt")))))
 (define-public varscan-2.4.2
   (varscan "2.4.2" "18425ce00e3ced8afc624bd86de142b1cd1e0eb0"
            "14f7fp0yaj3lsif1dpjdci7kz3b2fd9qic3299a2bvgk3rv3lp6n"))
+
+(define-public blat
+  (package
+    (name "blat")
+    (version "35")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (string-append "https://users.soe.ucsc.edu/~kent/src/blatSrc"
+                           version ".zip"))
+       (sha256
+        (base32
+         "081nwnd97p2ry4rjnnia6816cssm682hlm7hzqhlnjpc2kqvrn86"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #false                   ;There is no test target
+      #:make-flags '(list "MACHTYPE=i386"
+                          "BINDIR=/tmp/bin"
+                          "CFLAGS=-fcommon")
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'configure
+            (lambda _ (mkdir-p "/tmp/bin")))
+          (replace 'install
+            (lambda _
+              (let ((bin (string-append #$output "/bin")))
+                (copy-recursively "/tmp/bin" bin)))))))
+    (native-inputs (list unzip))
+    (inputs (list libpng))
+    (home-page "http://genome.ucsc.edu")
+    (synopsis "Pairwise sequence alignment algorithm")
+    (description "BLAT is a pairwise sequence alignment algorithm
+that.  It was designed primarily to decrease the time needed to align
+millions of mouse genomic reads and expressed sequence tags against
+the human genome sequence.")
+    (license (nonfree "Personal and academic use only."))))
 
 (define-public clinvar
   (package
