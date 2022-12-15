@@ -1151,7 +1151,7 @@ http://www.stats.ox.ac.uk/~marchini/software/gwas/gwas.html#licence"))))
 (define-public viennarna
   (package
     (name "viennarna")
-    (version "2.4.18")
+    (version "2.5.1")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://github.com/ViennaRNA/ViennaRNA"
@@ -1159,7 +1159,7 @@ http://www.stats.ox.ac.uk/~marchini/software/gwas/gwas.html#licence"))))
                                   version ".tar.gz"))
               (sha256
                (base32
-                "0z35d59hkc2ynb7rh6np2kbgx9ignasm09r7r0hlisivgknwyxmj"))))
+                "1ds4gr5xsp7l3ynkcwj86glgd5fp5ddqiqikclizfpl2fkai8i5y"))))
     (build-system gnu-build-system)
     (arguments
      ;; Disable link-time optimization because this creates problems
