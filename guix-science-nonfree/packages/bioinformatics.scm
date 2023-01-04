@@ -126,16 +126,16 @@ differential alternative splicing events from RNA-Seq data.")
     (name "strelka")
     (version "1.0.15")
     (source (origin
-      (method url-fetch)
-      (uri (string-append
-            ;;"ftp://strelka:''@ftp.illumina.com/v1-branch/v"
-            ;;version "/strelka_workflow-" version ".tar.gz"))
-            "https://sites.google.com/site/strelkasomaticvariantcaller/home/"
-            "download/" name "_workflow-" version ".tar.gz"))
-      (sha256
-       (base32 "1cwad2wlhdk09702ivblfiyv921af0al7s1gm1dn2d3b0v31qrp2"))
-      (patches (list (search-patch "strelka-disable-tests.patch")
-                     (search-patch "strelka-disable-install.patch")))))
+              (method url-fetch)
+              (uri (string-append
+                    ;;"ftp://strelka:''@ftp.illumina.com/v1-branch/v"
+                    ;;version "/strelka_workflow-" version ".tar.gz"))
+                    "https://sites.google.com/site/strelkasomaticvariantcaller/home/"
+                    "download/" name "_workflow-" version ".tar.gz"))
+              (sha256
+               (base32 "1cwad2wlhdk09702ivblfiyv921af0al7s1gm1dn2d3b0v31qrp2"))
+              (patches (list (search-patch "strelka-disable-tests.patch")
+                             (search-patch "strelka-disable-install.patch")))))
     (build-system gnu-build-system)
     (arguments
      `(#:tests? #f
@@ -160,13 +160,13 @@ differential alternative splicing events from RNA-Seq data.")
                (substitute* '("src/perl/bin/configureStrelkaWorkflow.pl"
                               "src/perl/libexec/callSomaticVariants.pl"
                               "src/perl/libexec/consolidateResults.pl")
-                            (("my \\$samtoolsDir = File::Spec->catdir\\(\\$optDir,'samtools'\\);")
-                             (string-append "my $samtoolsDir = \""
-                                            (assoc-ref inputs "samtools") "/bin\";"))
-                            (("my \\$samtoolsBin = File::Spec->catfile\\(\\$optDir,'samtools','samtools'\\);")
-                             (string-append "my $samtoolsBin = \""
-                                            (assoc-ref inputs "samtools")
-                                            "/bin/samtools\";")))
+                 (("my \\$samtoolsDir = File::Spec->catdir\\(\\$optDir,'samtools'\\);")
+                  (string-append "my $samtoolsDir = \""
+                                 (assoc-ref inputs "samtools") "/bin\";"))
+                 (("my \\$samtoolsBin = File::Spec->catfile\\(\\$optDir,'samtools','samtools'\\);")
+                  (string-append "my $samtoolsBin = \""
+                                 (assoc-ref inputs "samtools")
+                                 "/bin/samtools\";")))
 
                (substitute* "src/perl/libexec/consolidateResults.pl"
                  (("my \\$bgzipBin = File::Spec->catfile\\(\\$optDir,'tabix','bgzip'\\);")
