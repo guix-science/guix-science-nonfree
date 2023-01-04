@@ -1,5 +1,5 @@
 ;;; Copyright © 2016-2021 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2015-2023 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages image)
   #:use-module (gnu packages java)
+  #:use-module (gnu packages maths)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
@@ -48,6 +49,77 @@
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix utils))
+
+(define-public rmats-turbo
+  (package
+    (name "rmats-turbo")
+    (version "4.1.2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/Xinglab/rmats-turbo")
+                    (commit (string-append "v" version))))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "02ygjng1rc3k4daw3hrg102797dlvkcisnmwlhn1qbk0m3lg8dcb"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:imported-modules
+      `(,@%gnu-build-system-modules
+        (guix build python-build-system))
+      #:modules
+      '((guix build gnu-build-system)
+        ((guix build python-build-system) #:prefix python:)
+        (guix build utils))
+      #:tests? #false ;there is no check target
+      #:make-flags
+      #~(list (string-append "CC=" #$(cc-for-target))
+              "FC=gfortran"
+              (string-append "INSTALL_PATH=" #$output "/bin"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'configure
+            (lambda* (#:key inputs #:allow-other-keys)
+              (setenv "CPLUS_INCLUDE_PATH"
+                      (string-append (assoc-ref inputs "bamtools")
+                                     "/include/bamtools:"
+                                     (or (getenv "CPLUS_INCLUDE_PATH") "")))
+              (substitute* "rMATS_pipeline/setup.py"
+                (("'-Wl,-static',") ""))))
+          (add-before 'build 'chdir
+            (lambda _ (chdir "rMATS_C")))
+          (add-before 'install 'prepare-install
+            (lambda _ (mkdir-p (string-append #$output "/bin"))))
+          (add-after 'install 'build-pipeline
+            (lambda _
+              (chdir "../rMATS_pipeline")
+              (invoke "python" "setup.py" "build_ext")))
+          (add-after 'build-pipeline 'install-pipeline
+            (assoc-ref python:%standard-phases 'install)))))
+    (inputs
+     (list bamtools
+           gsl
+           gfortran
+           (list gfortran "lib")
+           lapack
+           openblas
+           python-wrapper
+           zlib))
+    (native-inputs
+     (list python-cython))
+    (home-page "https://github.com/Xinglab/rmats-turbo")
+    (synopsis "Detect differential alternative splicing events")
+    (description "rMATS-turbo is a computational tool to detect
+differential alternative splicing events from RNA-Seq data.")
+    ;; The intent here is to disallow commercial use, but the license
+    ;; is simply unclear.  The C part links with GSL and the directory
+    ;; containing the sources contains a copy of the GPL version 2.
+    ;; The root directory contains a copy of a BSD license, but is
+    ;; prefixed with a restriction that contradicts the license.
+    (license (list license:gpl2+
+                   (nonfree "Personal and academic use only.")))))
 
 (define-public strelka-1.0.15
   (package
