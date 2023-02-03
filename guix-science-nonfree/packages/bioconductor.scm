@@ -1,6 +1,7 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2019, 2020, 2021, 2022 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2019, 2020, 2021, 2022, 2023 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;; Copyright © 2020 Mădălin Ionel Patrașcu <madalinionel.patrascu@mdc-berlin.de>
+;;; Copyright © 2023 Navid Afkhami <navid.afkhami@mdc-berlin.de>
 ;;;
 ;;; This file is NOT part of GNU Guix, but is supposed to be used with GNU
 ;;; Guix and thus has the same license.
@@ -83,3 +84,24 @@ increase the power of the identification.")
     (license
      (nonfree "https://bioconductor.org/packages/release/bioc/licenses/RankProd/LICENSE"
               "Non-commercial"))))
+
+(define-public r-viper
+  (package
+    (name "r-viper")
+    (version "1.32.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "viper" version))
+              (sha256
+               (base32
+                "11i2q9nakh534nx2l736id7k1yqhk7jpg32sbfl4vrnh398q86h6"))))
+    (properties `((upstream-name . "viper")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-biobase r-e1071 r-kernsmooth r-mixtools))
+    (home-page "https://bioconductor.org/packages/viper")
+    (synopsis "Virtual inference of protein-activity by enriched regulon analysis")
+    (description
+     "This is a package for inference of protein activity from gene
+expression data.  It includes the VIPER and msVIPER algorithms")
+    (license (nonfree "https://bioconductor.org/packages/release/bioc/licenses/viper/LICENSE"
+                      "Non-commercial"))))
