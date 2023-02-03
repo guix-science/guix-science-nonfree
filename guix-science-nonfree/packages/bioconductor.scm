@@ -21,6 +21,7 @@
 
 (define-module (guix-science-nonfree packages bioconductor)
   #:use-module (guix-science-nonfree licenses)
+  #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix download)
   #:use-module (guix utils)
@@ -30,6 +31,33 @@
   #:use-module (gnu packages bioinformatics)
   #:use-module (gnu packages cran)
   #:use-module (gnu packages statistics))
+
+(define-public r-dorothea
+  (package
+    (name "r-dorothea")
+    (version "1.10.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "dorothea" version
+                                     'experiment))
+              (sha256
+               (base32
+                "05vkb5mash2m8p6njk842sy5pz7vblrm8n9bphqbslm86kld5n92"))))
+    (properties `((upstream-name . "dorothea")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-bcellviper r-dplyr r-magrittr r-viper))
+    (native-inputs (list r-knitr))
+    (home-page "https://saezlab.github.io/dorothea/")
+    (synopsis "Collection of human and mouse TF regulons")
+    (description
+     "DoRothEA is a gene regulatory network containing signed
+transcription factor.  DoRothEA regulons, the collection of a TF and
+its transcriptional targets, were curated and collected from different
+types of evidence for both human and mouse.  A confidence level was
+assigned to each TF-target interaction based on the number of
+supporting evidence.")
+    ;; This package depends on r-viper, which is non-free software.
+    (license license:gpl3)))
 
 (define-public r-motifdb
   (package
