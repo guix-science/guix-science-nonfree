@@ -243,41 +243,6 @@ Illumina%20Public%20License%201.pdf"))))
      `(("vcftools" ,vcftools)
        ("htslib" ,htslib)))))
 
-(define-public gatk-queue-bin-3.8-1
-  (package
-    (name "gatk-queue")
-    (version "3.8-1-0-gf15c1c3ef")
-    (source (origin
-              (method url-fetch)
-              (uri (string-append
-                    "https://www.roelj.com/gatk-queue-" version ".tar.bz2"))
-              (sha256
-               (base32 "0435lf2751w3l2m86m3h6girwr09kpiqahq3pj49gibqnyylx4sq"))))
-    (build-system gnu-build-system)
-    (arguments
-    `(#:tests? #f ; This is a binary package only, so no tests.
-      #:phases
-      (modify-phases %standard-phases
-        (delete 'configure) ; Nothing to configure.
-        (delete 'build) ; This is a binary package only.
-        (replace 'install
-          (lambda _
-            (let ((out (string-append (assoc-ref %outputs "out")
-                                      "/share/java/gatk/")))
-              (mkdir-p out)
-              (install-file "Queue.jar" out)))))))
-    (home-page "https://www.broadinstitute.org/gatk/")
-    (synopsis "Package for analysis of high-throughput sequencing")
-    (description "The Genome Analysis Toolkit or GATK is a software package for
-analysis of high-throughput sequencing data, developed by the Data Science and
-Data Engineering group at the Broad Institute.  The toolkit offers a wide
-variety of tools, with a primary focus on variant discovery and genotyping as
-well as strong emphasis on data quality assurance.  Its robust architecture,
-powerful processing engine and high-performance computing features make it
-capable of taking on projects of any size.")
-    ;; There are additional restrictions that make it nonfree.
-    (license license:expat)))
-
 (define-public igvtools
   (package
    (name "igvtools")
