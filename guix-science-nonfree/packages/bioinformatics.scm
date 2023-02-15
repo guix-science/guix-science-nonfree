@@ -285,8 +285,7 @@ Illumina%20Public%20License%201.pdf"))))
 visualization tool for interactive exploration of large, integrated genomic
 datasets.  It supports a wide variety of data types, including array-based and
 next-generation sequence data, and genomic annotations.")
-   ;; No license specified.
-   (license (license:non-copyleft "file:///dev/null"))))
+   (license license:lgpl2.1)))
 
 (define-public snpeff-bin-4.1
   (package
