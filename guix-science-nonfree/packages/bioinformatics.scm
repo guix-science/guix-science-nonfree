@@ -805,34 +805,6 @@ in the human genome.")
     ;; No license specified.
     (license (license:non-copyleft "file:///dev/null"))))
 
-(define-public gwascatalog
-  (package
-   (name "gwascatalog")
-   (version "GRCh37")
-   (source (origin
-            (method url-fetch)
-            ;(uri "http://www.genome.gov/admin/gwascatalog.txt")
-            (uri "http://www.roelj.com/gwascatalog.txt")
-            (sha256
-             (base32
-              "137xb3r3w6k8syj6dh6a856fvszcjlylwpzp98m35w5q52vxhdnx"))))
-   (build-system trivial-build-system)
-   (arguments
-    `(#:modules ((guix build utils))
-      #:builder
-      (begin
-        (use-modules (guix build utils))
-        (let ((source-file (assoc-ref %build-inputs "source"))
-              (output-dir (string-append %output "/share/gwascatalog")))
-          (mkdir-p output-dir)
-          (copy-file source-file
-                     (string-append output-dir "/gwascatalog.txt"))))))
-   (home-page "http://www.genome.gov/")
-   (synopsis "Extra data sets used by snpEff.")
-   (description "This package contains extra data sets used by snpEff.")
-   ;; No license specified.
-   (license (license:non-copyleft "file:///dev/null"))))
-
 (define-public gnomad-sv-sites-2.1
   (package
    (name "gnomad-sv-sites")
