@@ -19,8 +19,10 @@
 
 (define-module (guix-science-nonfree packages machine-learning)
   #:use-module (guix gexp)
+  #:use-module (guix utils)
   #:use-module (guix packages)
   #:use-module (gnu packages)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages machine-learning)
   #:use-module (guix-science-nonfree packages cuda))
@@ -50,4 +52,70 @@
     ;; than version 8.
     (native-inputs
      (modify-inputs (package-native-inputs gloo)
+       (append gcc-8)))))
+
+(define-public python-pytorch-with-cuda
+  (package
+    (inherit python-pytorch)
+    (name "python-pytorch-with-cuda")
+    (source
+     (origin
+       (inherit (package-source python-pytorch))
+       (snippet
+        '(begin
+           ;; We're using a separately built gloo, so this
+           ;; target does not exist.
+           (substitute* "cmake/Dependencies.cmake"
+             (("add_dependencies\\(gloo_cuda nccl_external\\)") ""))
+           ;; Tests cannot be built due to googletest linker error
+           (substitute* "modules/module_test/CMakeLists.txt"
+             (("set\\(BUILD_TEST ON\\)")
+              "set(BUILD_TEST OFF)"))
+           (substitute* '("c10/CMakeLists.txt"
+                          "c10/cuda/CMakeLists.txt")
+             (("add_subdirectory\\(test\\)") "")
+             (("add_subdirectory\\(benchmark\\)") ""))
+           ;; XXX: Let's be clear: this package is a bundling fest.  We
+           ;; delete as much as we can, but there's still a lot left.
+           (for-each (lambda (directory)
+                       (delete-file-recursively
+                        (string-append "third_party/" directory)))
+                     '("benchmark" "cpuinfo" "eigen"
+
+                       ;; FIXME: QNNPACK (of which XNNPACK is a fork)
+                       ;; needs these.
+                       ;; "FP16" "FXdiv" "gemmlowp" "psimd"
+
+                       "gloo" "googletest"
+                       "ios-cmake" "NNPACK"
+                       "onnx" "protobuf" "pthreadpool"
+                       "pybind11" "python-enum" "python-peachpy"
+                       "python-six" "tbb" "XNNPACK" "zstd"))))))
+    (name "python-pytorch-with-cuda")
+    (arguments
+     (substitute-keyword-arguments (package-arguments python-pytorch)
+       ((#:configure-flags flags '())
+        '(list "-DBUILD_TESTS=OFF" "-DBUILD_TEST=OFF"))))
+    (inputs
+     (modify-inputs (package-inputs python-pytorch)
+       (append cuda)
+       (replace "gloo" gloo-cuda)
+       ;; These need to be rebuilt because we're using a different
+       ;; compiler.
+       (replace "googletest"
+         (package
+           (inherit googletest)
+           (native-inputs
+            (modify-inputs (package-native-inputs googletest)
+              (append gcc-8)))))
+       (replace "googlebenchmark"
+         (package
+           (inherit googlebenchmark)
+           (native-inputs
+            (modify-inputs (package-native-inputs googlebenchmark)
+              (append gcc-8)))))))
+    ;; When building with CUDA 10 we cannot use any more recent GCC
+    ;; than version 8.
+    (native-inputs
+     (modify-inputs (package-native-inputs python-pytorch)
        (append gcc-8)))))
