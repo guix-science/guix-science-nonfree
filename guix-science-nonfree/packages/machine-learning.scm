@@ -27,13 +27,47 @@
   #:use-module (gnu packages machine-learning)
   #:use-module (guix-science-nonfree packages cuda))
 
+(define googletest/gcc8
+  (package
+    (inherit googletest)
+    (native-inputs
+     (modify-inputs (package-native-inputs googletest)
+       (append gcc-8)))))
+
+(define googlebenchmark/gcc8
+  (package
+    (inherit googlebenchmark)
+    (native-inputs
+     (modify-inputs (package-native-inputs googlebenchmark)
+       (append gcc-8)))))
+
+(define onnx/gcc8
+  (package
+    (inherit onnx)
+    (name "onnx-gcc8")
+    (native-inputs
+     (modify-inputs (package-native-inputs onnx)
+       (append gcc-8)
+       (replace "googletest" googletest/gcc8)))))
+
+(define onnx-optimizer/gcc8
+  (package
+    (inherit onnx-optimizer)
+    (name "onnx-optimizer-gcc8")
+    (inputs
+     (modify-inputs (package-inputs onnx-optimizer)
+       (replace "onnx" onnx/gcc8)))
+    (native-inputs
+     (modify-inputs (package-native-inputs onnx-optimizer)
+       (append gcc-8)))))
+
 (define-public gloo-cuda
   (package
     (inherit gloo)
     (name "gloo-cuda")
     (arguments
      (list
-      #:tests? #false ;see linker error below
+      #:tests? #false                   ;see linker error below
       #:configure-flags
       #~'("-DBUILD_SHARED_LIBS=ON"
           ;; We cannot build the tests because of a linker error with googletest:
@@ -67,14 +101,6 @@
            ;; target does not exist.
            (substitute* "cmake/Dependencies.cmake"
              (("add_dependencies\\(gloo_cuda nccl_external\\)") ""))
-           ;; Tests cannot be built due to googletest linker error
-           (substitute* "modules/module_test/CMakeLists.txt"
-             (("set\\(BUILD_TEST ON\\)")
-              "set(BUILD_TEST OFF)"))
-           (substitute* '("c10/CMakeLists.txt"
-                          "c10/cuda/CMakeLists.txt")
-             (("add_subdirectory\\(test\\)") "")
-             (("add_subdirectory\\(benchmark\\)") ""))
            ;; XXX: Let's be clear: this package is a bundling fest.  We
            ;; delete as much as we can, but there's still a lot left.
            (for-each (lambda (directory)
@@ -94,26 +120,25 @@
     (name "python-pytorch-with-cuda")
     (arguments
      (substitute-keyword-arguments (package-arguments python-pytorch)
-       ((#:configure-flags flags '())
-        '(list "-DBUILD_TESTS=OFF" "-DBUILD_TEST=OFF"))))
+       ((#:phases phases '%standard-phases)
+        `(modify-phases ,phases
+           ;; XXX: libcuda.so.1 is not on the RUNPATH.
+           (delete 'validate-runpath)
+           (add-after 'unpack 'do-not-build-tests
+             (lambda _
+               (setenv "INSTALL_TEST" "OFF")
+               (setenv "BUILD_TESTS" "OFF")
+               (setenv "BUILD_TEST" "OFF")))))))
     (inputs
      (modify-inputs (package-inputs python-pytorch)
        (append cuda)
-       (replace "gloo" gloo-cuda)
-       ;; These need to be rebuilt because we're using a different
-       ;; compiler.
-       (replace "googletest"
-         (package
-           (inherit googletest)
-           (native-inputs
-            (modify-inputs (package-native-inputs googletest)
-              (append gcc-8)))))
-       (replace "googlebenchmark"
-         (package
-           (inherit googlebenchmark)
-           (native-inputs
-            (modify-inputs (package-native-inputs googlebenchmark)
-              (append gcc-8)))))))
+       (delete "googletest")
+       (delete "googlebenchmark")
+       (replace "gloo" gloo-cuda)))
+    (propagated-inputs
+     (modify-inputs (package-propagated-inputs python-pytorch)
+       (replace "onnx" onnx/gcc8)
+       (replace "onnx-optimizer" onnx-optimizer/gcc8)))
     ;; When building with CUDA 10 we cannot use any more recent GCC
     ;; than version 8.
     (native-inputs
