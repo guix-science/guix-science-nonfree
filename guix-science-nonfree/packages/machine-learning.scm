@@ -182,3 +182,27 @@
     (native-inputs
      (modify-inputs (package-native-inputs python-pytorch)
        (append gcc-8)))))
+
+(define-public python-pytorch-with-cuda11
+  (package
+    (inherit python-pytorch-with-cuda10)
+    (name "python-pytorch-with-cuda11")
+    (arguments
+     (substitute-keyword-arguments (package-arguments python-pytorch-with-cuda10)
+       ((#:phases phases '%standard-phases)
+        `(modify-phases ,phases
+           ;; XXX: Building with the bundled NCCL <https://github.com/nvidia/nccl>
+           ;; fails with "undefined reference" errors.
+           (add-after 'unpack 'disable-nccl
+             (lambda _
+               (substitute* "CMakeLists.txt"
+                 (("USE_NCCL \"Use NCCL\" ON")
+                  "USE_NCCL \"Use NCCL\" OFF"))))))))
+    (inputs
+     (modify-inputs (package-inputs python-pytorch-with-cuda10)
+       (replace "cuda-toolkit" cuda-11.7)
+       (replace "gloo" gloo-cuda11)))
+    (propagated-inputs
+     (package-propagated-inputs python-pytorch))
+    (native-inputs
+     (package-native-inputs python-pytorch))))
