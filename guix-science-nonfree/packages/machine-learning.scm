@@ -61,10 +61,10 @@
      (modify-inputs (package-native-inputs onnx-optimizer)
        (append gcc-8)))))
 
-(define-public gloo-cuda
+(define-public gloo-cuda10
   (package
     (inherit gloo)
-    (name "gloo-cuda")
+    (name "gloo-cuda10")
     (arguments
      (list
       #:tests? #false                   ;see linker error below
@@ -134,7 +134,7 @@
        (append cuda)
        (delete "googletest")
        (delete "googlebenchmark")
-       (replace "gloo" gloo-cuda)))
+       (replace "gloo" gloo-cuda10)))
     (propagated-inputs
      (modify-inputs (package-propagated-inputs python-pytorch)
        (replace "onnx" onnx/gcc8)
