@@ -19,12 +19,14 @@
 
 (define-module (guix-science-nonfree packages machine-learning)
   #:use-module (guix gexp)
+  #:use-module (guix git-download)
   #:use-module (guix utils)
   #:use-module (guix packages)
   #:use-module (gnu packages)
   #:use-module (gnu packages check)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages machine-learning)
+  #:use-module (gnu packages tls)
   #:use-module (guix-science-nonfree packages cuda))
 
 (define googletest/gcc8
@@ -87,6 +89,42 @@
     (native-inputs
      (modify-inputs (package-native-inputs gloo)
        (append gcc-8)))))
+
+(define-public gloo-cuda11
+  (let ((version "0.0.0")
+        (commit "a01540ec3dabd085ad2579aa2b7a004406e2793b")
+        (revision "20230315"))
+    (package
+      (inherit gloo-cuda10)
+      (name "gloo-cuda11")
+      (version (git-version version revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/facebookincubator/gloo")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1rqcq46lmhr1xjz3bbr5mfmhyvff6qhnp88q2af5vfc9rrljvklj"))))
+      (arguments
+       (substitute-keyword-arguments (package-arguments gloo-cuda10)
+         ((#:configure-flags flags '())
+          #~'("-DBUILD_SHARED_LIBS=ON"
+              "-DBUILD_TEST=OFF"
+              "-DUSE_CUDA=ON"))
+         ((#:phases phases '%standard-phases)
+          `(modify-phases ,phases
+             (add-after 'unpack 'drop-unsupported-arch
+               (lambda _
+                 (substitute* "cmake/Cuda.cmake"
+                   (("gloo_known_gpu_archs \"[^\"]+\"")
+                    "gloo_known_gpu_archs \"35 50 52 60 61 70 75\""))))))))
+      (inputs
+       (list cuda-11.7 openssl))
+      (native-inputs
+       (package-native-inputs gloo)))))
 
 (define-public python-pytorch-with-cuda10
   (package
