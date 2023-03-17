@@ -88,10 +88,10 @@
      (modify-inputs (package-native-inputs gloo)
        (append gcc-8)))))
 
-(define-public python-pytorch-with-cuda
+(define-public python-pytorch-with-cuda10
   (package
     (inherit python-pytorch)
-    (name "python-pytorch-with-cuda")
+    (name "python-pytorch-with-cuda10")
     (source
      (origin
        (inherit (package-source python-pytorch))
