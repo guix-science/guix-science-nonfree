@@ -83,7 +83,7 @@
                  #~()))))
     (inputs
      (modify-inputs (package-inputs gloo)
-       (append cuda)))
+       (append cuda-10.2)))
     ;; When building with CUDA 10 we cannot use any more recent GCC
     ;; than version 8.
     (native-inputs
