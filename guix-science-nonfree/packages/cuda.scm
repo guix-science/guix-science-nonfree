@@ -244,7 +244,7 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
   ;;
   ;; Note: Pick a version that matches the actual "driver"--i.e.,
   ;; /usr/lib64/libcuda.so available on the target machine.
-  cuda-10.2)
+  cuda-11.7)
 
 (define-public no-float128
   ;; FIXME: We cannot simply add it to 'propagated-inputs' of cuda-toolkit
