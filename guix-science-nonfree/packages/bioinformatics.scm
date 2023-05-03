@@ -192,6 +192,42 @@ would be better to avoid using this proprietary program.  I encourage
 people to write a free software alternative rather than using this
 tool."))))
 
+(define-public bcl2fastq
+  (package (inherit bcl2fastq-2.18)
+    (version "2.20.0")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://webdata2:webdata2@ussd-ftp.illumina.com"
+                                  "/downloads/software/bcl2fastq/bcl2fastq2-v"
+                                  (string-join (string-split version #\.) "-")
+                                  "-tar.zip"))
+              (sha256
+               (base32
+                "1qqz217ipsv5wq28wd5pp3jl870i5dbdxq3dwi6ali6hcx3h9lwd"))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments bcl2fastq-2.18)
+       ((#:configure-flags flags)
+        #~(list (string-append "-DBCL2FASTQ_VERSION:STRING=" #$version)
+                "-DBCL2FASTQ_NAME_SHORT:STRING=bcl2fastq"
+                "-DBCL2FASTQ_NAME_LONG:STRING=BCL to FASTQ file converter"
+                "-DBCL2FASTQ_COPYRIGHT:STRING=Copyright (c) 2007-2018 Illumina, Inc."
+                (string-append "-DBCL2FASTQ_SOURCE_DIR:STRING=" (getcwd) "/bcl2fastq/src")))
+       ((#:phases phases)
+        #~(modify-phases #$phases
+            (replace 'unpack
+              (lambda* (#:key source #:allow-other-keys)
+                (invoke "unzip" source)
+                (invoke "tar" "-xvf"
+                        (string-append "bcl2fastq2-v" #$version
+                                       ".422-Source.tar.gz"))
+                (substitute* "bcl2fastq/src/cxx/include/common/Logger.hh"
+                  (("#include <ios>" m)
+                   (string-append m "\n#include <iostream>")))))
+            (add-after 'install 'rename-/bin/test
+              (lambda _
+                (rename-file (string-append #$output "/bin/test")
+                             (string-append #$output "/bin/bcl2fastq-test"))))))))))
+
 (define-public rmats-turbo
   (package
     (name "rmats-turbo")
