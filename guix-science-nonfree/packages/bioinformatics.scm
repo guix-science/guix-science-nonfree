@@ -42,6 +42,9 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages statistics)
   #:use-module (gnu packages swig)
+  #:use-module (gnu packages xml)
+  #:use-module (past packages boost)
+  #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system r)
   #:use-module (guix build-system ant)
@@ -109,6 +112,85 @@ image-reconstruction framework for Computational Magnetic Resonance Imaging.
 The tools in this software implement various reconstruction algorithms for
 Magnetic Resonance Imaging.")
     (license license:bsd-3)))
+
+(define-public bcl2fastq-2.18
+  (package
+    (name "bcl2fastq")
+    (version "2.18.0.12")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "http://support.illumina.com/content/"
+                                  "dam/illumina-support/documents/downloads/"
+                                  "software/bcl2fastq/bcl2fastq2-v"
+                                  (string-join (string-split version #\.) "-")
+                                  "-tar.zip"))
+              (sha256
+               (base32
+                "0anshb1qvpzm373q338qgr0gs1bjpw4ssyysl4gh7nfwidzmca25"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      #:configure-flags
+      #~(list (string-append "-DBCL2FASTQ_VERSION:STRING=" #$version)
+              "-DBCL2FASTQ_NAME_SHORT:STRING=bcl2fastq"
+              "-DBCL2FASTQ_NAME_LONG:STRING=BCL to FASTQ file converter"
+              "-DBCL2FASTQ_COPYRIGHT:STRING=Copyright (c) 2007-2016 Illumina, Inc."
+              (string-append "-DBCL2FASTQ_SOURCE_DIR:STRING=" (getcwd) "/bcl2fastq/src"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'unpack
+            (lambda* (#:key source #:allow-other-keys)
+              (invoke "unzip" source)
+              (invoke "tar" "-xvf"
+                      (string-append "bcl2fastq2-v"
+                                     #$version ".tar.gz"))))
+          (add-after 'unpack 'chdir
+            (lambda _ (chdir "bcl2fastq/src")))
+          (add-after 'chdir 'patch-stuff
+            (lambda* (#:key inputs #:allow-other-keys)
+              ;; Update for boost 1.54 -> 1.56
+              (substitute* "cxx/lib/io/Xml.cpp"
+                (("xml_writer_make_settings\\(")
+                 "xml_writer_make_settings<ptree::key_type>("))
+              (substitute* "cxx/include/common/Logger.hh"
+                (("#include <ios>" m)
+                 (string-append "#include <iostream>\n" m)))
+              ;; Do not use bundled libraries
+              (substitute* "cmake/cxxConfigure.cmake"
+                (("\"\\$\\{LIBEXSLT_LIBRARIES\\}\"")
+                 (string-append (assoc-ref inputs "libxslt")
+                                "/lib/libexslt.so"))
+                (("find_library_redist\\(LIBXSLT .*")
+                 "bcl2fastq_find_library(LIBXSLT libxslt/xsltconfig.h xslt)\n")
+                (("find_library_redist\\(LIBXML2 .*")
+                 "bcl2fastq_find_library(LIBXML2 libxml/xpath.h xml2)\n")
+                (("find_library_redist\\(LIBEXSLT .*")
+                 "bcl2fastq_find_library(LIBEXSLT libexslt/exslt.h exslt)\n")
+                (("redist_package") "#")
+                (("^  +\"--prefix=.*") ""))
+              ;; Work around broken version checking
+              (substitute* "CMakeLists.txt"
+                (("BCL2FASTQ_LIBXML2_VERSION 2.7.8")
+                 (string-append "BCL2FASTQ_LIBXML2_VERSION "
+                                #$(package-version (this-package-input "libxml2")) ))
+                (("BCL2FASTQ_LIBXSLT_VERSION 1.1.26")
+                 (string-append "BCL2FASTQ_LIBXSLT_VERSION "
+                                #$(package-version (this-package-input "libxslt"))))))))))
+    (inputs
+     (list boost-1.58 libxml2 libxslt zlib))
+    (native-inputs (list unzip))
+    (home-page "http://support.illumina.com/downloads/bcl2fastq_conversion_software.html")
+    (synopsis "Convert files in BCL format to FASTQ")
+    (description
+     "bcl2fastq is conversion software, which can be used to both
+demultiplex data and convert BCL files to FASTQ files.")
+    (license (nonfree "http://support.illumina.com/content/dam/\
+illumina-support/documents/documentation/software_documentation/\
+bcl2fastq/bcl2fastq2-v2-16-EULA.pdf"
+                      "This is an extremely restrictive license and it
+would be better to avoid using this proprietary program.  I encourage
+people to write a free software alternative rather than using this
+tool."))))
 
 (define-public rmats-turbo
   (package
