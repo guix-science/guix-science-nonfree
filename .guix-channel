@@ -1,3 +1,7 @@
 (channel
   (version 0)
-  (url "https://github.com/guix-science/guix-science-nonfree.git"))
+  (url "https://github.com/guix-science/guix-science-nonfree.git")
+  (dependencies
+   (channel
+    (name guix-past)
+    (url "https://gitlab.inria.fr/guix-hpc/guix-past"))))
