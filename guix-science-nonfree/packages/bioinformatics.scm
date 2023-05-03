@@ -17,7 +17,9 @@
 (define-module (guix-science-nonfree packages bioinformatics)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix-science-nonfree licenses)
+  #:use-module (guix-science-nonfree packages cuda)
   #:use-module (gnu packages)
+  #:use-module (gnu packages algebra)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bioconductor)
@@ -27,9 +29,11 @@
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cran)
+  #:use-module (gnu packages documentation)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages image)
   #:use-module (gnu packages java)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
@@ -49,6 +53,62 @@
   #:use-module (guix git-download)
   #:use-module (guix packages)
   #:use-module (guix utils))
+
+;; TODO: this is not reproducible.  The /bin/bart executable differs
+;; across builds in size and offsets.
+
+;; This package is free software, but due to using CUDA it cannot be
+;; added to the "guix-science" channel (or Guix itself).
+(define-public bart-with-cuda
+  (package
+    (name "bart-with-cuda")
+    (version "0.8.00")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/mrirecon/bart")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "05lcf7c3g7ms5h82bw1mi4kzkdv5wpqi1zrfhqfkgbcpd3irj6aq"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:test-target "utest"
+      #:make-flags #~(list
+                      (string-append "PREFIX=" #$output)
+                      "CUDA=1"
+                      (string-append "CUDA_BASE=" #$(this-package-input "cuda-toolkit"))
+                      "OPENBLAS=1"
+                      "SCALAPACK=1"
+                      (string-append "BLAS_BASE=" #$(this-package-input "openblas"))
+                      (string-append "FFTW_BASE=" #$(this-package-input "fftw")))
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (add-after 'unpack 'patch-/bin/bash
+            (lambda _
+              (substitute* "tests/pics.mk"
+                (("/bin/bash") (which "bash"))))))))
+    (inputs
+     (list cuda-11.7
+           fftw
+           fftwf
+           libpng
+           openblas
+           python
+           scalapack))
+    (native-inputs
+     (list doxygen
+           util-linux))                 ;for flock
+    (home-page "https://mrirecon.github.io/bart/")
+    (synopsis "Toolbox for computational magnetic resonance imaging")
+    (description "The Berkeley Advanced Reconstruction Toolbox (BART) is an
+image-reconstruction framework for Computational Magnetic Resonance Imaging.
+The tools in this software implement various reconstruction algorithms for
+Magnetic Resonance Imaging.")
+    (license license:bsd-3)))
 
 (define-public rmats-turbo
   (package
