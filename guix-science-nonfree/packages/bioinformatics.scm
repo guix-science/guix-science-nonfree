@@ -44,6 +44,7 @@
   #:use-module (gnu packages swig)
   #:use-module (gnu packages xml)
   #:use-module (past packages boost)
+  #:use-module (past packages perl)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system r)
@@ -57,6 +58,32 @@
   #:use-module (guix packages)
   #:use-module (guix utils))
 
+
+(define (other-perl-package-name other-perl)
+  "Return a procedure that returns NAME with a new prefix for
+OTHER-PERL instead of \"perl-\", when applicable."
+  (let ((other-perl-version (version-major+minor
+                             (package-version other-perl))))
+    (lambda (name)
+      (if (string-prefix? "perl-" name)
+          (string-append "perl" other-perl-version "-"
+                         (string-drop name
+                                      (string-length "perl-")))
+          name))))
+
+(define-public (package-for-other-perl other-perl pkg)
+  ;; This is a procedure to replace PERL by OTHER-PERL, recursively.
+  ;; It also ensures that rewritten packages are built with OTHER-PERL.
+  (let* ((rewriter (package-input-rewriting `((,perl . ,other-perl))
+                                            (other-perl-package-name other-perl)
+                                            #:deep? #false))
+         (new (rewriter pkg)))
+    (package (inherit new)
+      (arguments `(#:perl ,other-perl
+                   #:tests? #f ; oh well...
+                   ,@(package-arguments new))))))
+
+
 ;; TODO: this is not reproducible.  The /bin/bart executable differs
 ;; across builds in size and offsets.
 
@@ -227,6 +254,75 @@ tool."))))
               (lambda _
                 (rename-file (string-append #$output "/bin/test")
                              (string-append #$output "/bin/bcl2fastq-test"))))))))))
+
+(define-public bcl2fastq1
+  (package (inherit bcl2fastq-2.18)
+    (name "bcl2fastq1")
+    (version "1.8.4")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "ftp://webdata:webdata@ussd-ftp.illumina.com/"
+                                  "Downloads/Software/bcl2fastq/bcl2fastq-"
+                                  version ".tar.bz2"))
+              (sha256
+               (base32
+                "0hwkmnzvq5l7w9dq7wgb5vvrb86l7psxqw24abradnxxdz849bhk"))
+              (snippet
+               `(begin
+                  (delete-file "redist/boost_1_44_0.tar.gz")
+                  (delete-file "redist/cmake-2.8.4.tar.gz")))))
+    (arguments
+     (list
+      #:configure-flags
+      #~(list (string-append "-DBOOST_ROOT="
+			                 #$(this-package-input "boost"))
+	          "-DBoost_DEBUG=ON"
+	          ;; Needed for later versions of CMake with older versions of Boost
+	          "-DBoost_NO_BOOST_CMAKE=ON")
+       #:phases
+       #~(modify-phases %standard-phases
+           (add-after 'set-paths 'hide-default-gcc
+             (lambda* (#:key inputs #:allow-other-keys)
+               (let ((gcc (assoc-ref inputs "gcc")))
+                 ;; Remove the default GCC from CPLUS_INCLUDE_PATH to prevent
+                 ;; conflicts with the GCC 5 input.
+                 (setenv "CPLUS_INCLUDE_PATH"
+                         (string-join
+                          (delete (string-append gcc "/include/c++")
+                                  (string-split (getenv "CPLUS_INCLUDE_PATH") #\:))
+                          ":")))))
+           (add-after 'unpack 'chdir (lambda _ (chdir "src")))
+           (add-after 'chdir 'fix-includes
+             (lambda _
+               (substitute* "c++/include/common/FileConversion.hh"
+                 (("#pragma once" line)
+                  (string-append line "\n#include <stdint.h>")))
+               (substitute* "c++/include/demultiplex/BarcodeTranslationTable.hh"
+                 (("^namespace casava" line)
+                  (string-append "#include <stdint.h>\n" line)))))
+           (add-after 'install 'wrap-perl-scripts
+             (lambda* (#:key inputs outputs #:allow-other-keys)
+               ;; Make sure perl scripts finds all perl inputs at runtime.
+               (for-each (lambda (prog)
+                           (wrap-program (string-append #$output "/bin/" prog)
+                             `("PERL5LIB" ":" prefix
+                               (,(getenv "PERL5LIB")))))
+                         '("configureBclToFastq.pl"
+                           "configureQseqToFastq.pl"
+                           "configureValidation.pl")))))))
+    (native-inputs
+     `(("gcc@4" ,gcc-4.9)))
+    ;; We need the older version of Boost although this could be built
+    ;; with 1.55 with only minor changes.  The reason is option
+    ;; parsing, which only bites us at runtime.
+    (inputs
+     (list boost-1.44
+           libxml2
+           libxslt
+           (package-for-other-perl perl-5.14 perl-xml-simple)
+           (package-for-other-perl perl-5.14 perl-xml-parser)
+           perl-5.14
+           zlib))))
 
 (define-public rmats-turbo
   (package
