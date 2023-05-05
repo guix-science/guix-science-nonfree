@@ -84,6 +84,44 @@ OTHER-PERL instead of \"perl-\", when applicable."
                    ,@(package-arguments new))))))
 
 
+(define-public amd
+  (package
+    (name "amd")
+    (version "0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri "https://doi.org/10.1371/journal.pone.0024576.s004")
+       (sha256
+        (base32 "1134yfcrgymhpzg2423a9z5j5nlcrfizfb9hm4kn36zcpclh4dq3"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #false ;there are none
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'unpack
+            (lambda _
+              (invoke "unrar-free" "-x" #$source)))
+          (add-after 'unpack 'chdir
+            (lambda _
+              (chdir "source")))
+          (delete 'configure)
+          (replace 'install
+            (lambda _
+              (install-file "AMD" (string-append #$output "/bin")))))))
+    (native-inputs
+     (list unrar-free))
+    (home-page "https://doi.org/10.1371/journal.pone.0024576")
+    (synopsis
+     "Automated motif discovery using stepwise refinement of gapped consensuses")
+    (description "Motif discovery is essential for deciphering
+regulatory codes from high throughput genomic data, such as those from
+ChIP-chip/seq experiments.  AMD is an automated tool that allows for
+de novo discovery of transcription factor binding sites, regardless of
+whether the motifs are long or short, gapped or contiguous.")
+    (license (nonfree "No license declared"))))
+
 ;; TODO: this is not reproducible.  The /bin/bart executable differs
 ;; across builds in size and offsets.
 
