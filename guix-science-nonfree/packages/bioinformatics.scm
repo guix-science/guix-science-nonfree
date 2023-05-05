@@ -30,19 +30,23 @@
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cran)
+  #:use-module (gnu packages digest)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages image)
   #:use-module (gnu packages java)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages machine-learning)
   #:use-module (gnu packages maths)
   #:use-module (gnu packages mpi)
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-science)
   #:use-module (gnu packages python-xyz)
+  #:use-module (gnu packages serialization)
   #:use-module (gnu packages statistics)
   #:use-module (gnu packages swig)
   #:use-module (gnu packages web)
@@ -638,6 +642,91 @@ visualization tool for interactive exploration of large, integrated genomic
 datasets.  It supports a wide variety of data types, including array-based and
 next-generation sequence data, and genomic annotations.")
    (license license:lgpl2.1)))
+
+;; This is tainted because it depends on all these non-free tools.
+(define-public python-gimmemotifs
+  (package
+    (name "python-gimmemotifs")
+    (version "0.18.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/vanheeringen-lab/gimmemotifs/")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0jxr8884k7lic88vhr35l59q5qlpm64p4sv3xfq3l4y41ansh2z0"))
+              (modules '((guix build utils)))
+              ;; Delete included third-party binaries
+              (snippet
+               '(delete-file-recursively "src"))))
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:test-flags
+      ;; A lot of the tests depend on a wide range of external tools.
+      '(list "-k"
+             (string-append "not test_tool"
+                            ;; The denovo tests fail because no motifs
+                            ;; are found.
+                            " and not test_gimme_motifs[denovo]"
+                            " and not test1_denovo"
+                            ;; not needed
+                            " and not test_black_formatting"
+                            " and not test_flake8_formatting"
+                            " and not test_isort_formatting"))
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'do-not-copy-binaries
+            (lambda _
+              (substitute* "setup.py"
+                (("^cmdclass\\[\"build_py.*") ""))))
+          (add-after 'unpack 'set-HOME
+            (lambda _
+              (setenv "HOME" "/tmp")))
+          (add-after 'install 'link-tools
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((target
+                     (string-append #$output
+                                    "/lib/python3.10/site-packages/gimmemotifs/included_tools/")))
+                (for-each
+                 (lambda (tool)
+                   (symlink tool (string-append target (basename tool))))
+                 (list (search-input-file inputs "/bin/AMD")
+                       (search-input-file inputs "/bin/BioProspector")
+                       (search-input-file inputs "/bin/meme")))))))))
+    (propagated-inputs (list python-biofluff
+                             python-configparser
+                             python-diskcache
+                             python-feather-format
+                             python-genomepy
+                             python-iteround
+                             python-jinja2
+                             python-logomaker
+                             python-loguru
+                             python-matplotlib
+                             python-numpy
+                             python-pandas
+                             python-pybedtools
+                             python-pysam
+                             python-qnorm
+                             python-scikit-learn
+                             python-scipy
+                             python-seaborn
+                             python-setuptools
+                             python-statsmodels
+                             python-tqdm
+                             python-xdg
+                             python-xxhash))
+    (inputs
+     (list amd bioprospector meme))
+    (native-inputs (list python-pytest))
+    (home-page "https://github.com/vanheeringen-lab/gimmemotifs/")
+    (synopsis "GimmeMotifs is a motif prediction pipeline.")
+    (description "GimmeMotifs is a suite of motif tools, including a motif
+prediction pipeline for ChIP-seq experiments.")
+    (license license:expat)))
 
 (define (varscan version commit hash)
   (let ((jar-file (string-append "varscan-" version ".jar")))
