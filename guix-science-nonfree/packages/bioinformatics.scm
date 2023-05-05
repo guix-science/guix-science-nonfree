@@ -324,6 +324,42 @@ tool."))))
            perl-5.14
            zlib))))
 
+(define-public bioprospector
+  (package
+    (name "bioprospector")
+    (version "2004")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://motif.stanford.edu/"
+                                  "distributions/bioprospector/"
+                                  "BioProspector." version ".zip"))
+              (sha256
+               (base32
+                "0yhdg3cp1a7hniw89cfq6jmj88zqjbzkiz54j8gk418m8l7inika"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #false                   ;there is no check target
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (replace 'build
+            (lambda _
+              (invoke "gcc" "-o" "BioProspector" "-lm"
+                      "BioProspector.2004.c")))
+          (replace 'install
+            (lambda _
+              (let ((bin (string-append #$output "/bin")))
+                (mkdir-p bin)
+                (install-file "BioProspector" bin)))))))
+    (native-inputs (list unzip))
+    (home-page "https://motif.stanford.edu/distributions/bioprospector/")
+    (synopsis "Discover conserved transcription factor binding sites")
+    (description "BioProspector discovers conserved transcription
+factor binding sites among upstream sequences from co-regulated
+genes.")
+    (license (nonfree "Academic use only."))))
+
 (define-public rmats-turbo
   (package
     (name "rmats-turbo")
