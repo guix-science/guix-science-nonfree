@@ -739,7 +739,6 @@ next-generation sequence data, and genomic annotations.")
              (string-append "not test_tool"
                             ;; The denovo tests fail because no motifs
                             ;; are found.
-                            " and not test_gimme_motifs[denovo]"
                             " and not test1_denovo"
                             ;; not needed
                             " and not test_black_formatting"
