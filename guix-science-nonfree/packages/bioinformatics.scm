@@ -406,7 +406,7 @@ factor binding sites among upstream sequences from co-regulated
 genes.")
     (license (nonfree "Academic use only."))))
 
-(define-public meme
+(define-public meme-4
   (package
     (name "meme")
     (version "4.11.3_1")
@@ -527,6 +527,75 @@ known motifs (CentriMo), and analyzing ChIP-seq and other large
 datasets (MEME-ChIP).")
     (license (nonfree "http://meme-suite.org/doc/copyright.html"
                       "license forbids commercial usage"))))
+
+(define-public meme
+  (package
+    (inherit meme-4)
+    (name "meme")
+    (version "5.5.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "https://meme-suite.org/meme/meme-software/"
+                                  version
+                                  "/meme-" version ".tar.gz"))
+              (sha256
+               (base32
+                "18q5mddpiphvxb0lah530p3mgpmp3y6gmyngbs4q8xdcim1l81il"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'fix-paths-to-tools
+            (lambda _
+              (substitute* "src/utils.c"
+                (("\"hostname")
+                 (string-append "\"" (which "hostname"))))))
+          (add-after 'unpack 'remove-bad-tests
+            (lambda _
+              ;; We don't build the web server stuff, so we don't need
+              ;; to run the tests for that either.
+              (substitute* "tests/scripts/Makefile.in"
+                (("tomtom.test") "")
+                ;; These fail because sysfs is not mounted in the
+                ;; build container.
+                (("meme.test") "")
+                (("meme-chip.test") "")
+                ;; The probabilities differ slightly
+                (("xstreme.test") ""))))
+          (add-after 'install 'wrap-perl-scripts
+            (lambda* (#:key outputs #:allow-other-keys)
+              ;; Make sure perl scripts finds all perl inputs at runtime.
+              (for-each (lambda (prog)
+                          (wrap-program (string-append #$output "/bin/" prog)
+                            `("PERL5LIB" ":" prefix
+                              (,(getenv "PERL5LIB")))))
+                        '("meme-chip"
+                          "xstreme")))))))
+    (inputs
+     (list perl
+           perl-file-which
+           perl-html-parser
+           perl-html-template
+           perl-xml-simple
+           perl-xml-compile
+           perl-xml-compile-wsdl11
+           perl-xml-parser
+           python
+           libxml2
+           libxslt
+           openmpi
+           ghostscript
+           inetutils                    ;for "hostname"
+           zlib))
+    (propagated-inputs
+     ;; "which" must be propagated because of the weird way it is used
+     ;; in "src/exec_parallel.c".  The buffer "cmd_len" is arranged to
+     ;; be 6 characters longer than the argument, just enough for the
+     ;; string "which ".  I don't want to mess with pointers and
+     ;; buffer lengths just to hardcode a path to the "which"
+     ;; executable.
+     (list which))))
 
 (define-public rmats-turbo
   (package
