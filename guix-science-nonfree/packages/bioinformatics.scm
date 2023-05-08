@@ -832,6 +832,11 @@ Gene Regulatory Network models.")
           (add-after 'unpack 'set-HOME
             (lambda _
               (setenv "HOME" "/tmp")))
+          (add-after 'unpack 'fix-tool-name
+            (lambda _
+              (substitute* '("gimmemotifs/tools/amd.py"
+                             "data/cfg/gimmemotifs.default.cfg")
+                (("AMD.bin") "AMD"))))
           (add-after 'install 'link-tools
             (lambda* (#:key inputs #:allow-other-keys)
               (let ((target
