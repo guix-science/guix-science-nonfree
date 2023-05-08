@@ -802,6 +802,43 @@ next-generation sequence data, and genomic annotations.")
 prediction pipeline for ChIP-seq experiments.")
     (license license:expat)))
 
+;; This is tainted because it depends on all these non-free tools.
+(define-public python-gimmemotifs-0.17
+  (package
+    (inherit python-gimmemotifs)
+    (name "python-gimmemotifs")
+    (version "0.17.2")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/vanheeringen-lab/gimmemotifs/")
+                    (commit version)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1ykybgfv10g2zzif6jsfscdff8cm3chagw2rkkrzy74cg0psvkvm"))
+              (modules '((guix build utils)))
+              ;; Delete included third-party binaries
+              (snippet
+               '(delete-file-recursively "src"))))
+    (arguments
+     (substitute-keyword-arguments (package-arguments python-gimmemotifs)
+       ((#:phases phases '%standard-phases)
+        #~(modify-phases #$phases
+            (replace 'patch-version
+              (lambda _
+                (substitute* "setup.py"
+                  (("version =.*")
+                   (string-append "version = \"" #$version "\"")))))))
+       ((#:test-flags _ '())
+        ;; A lot of the tests depend on a wide range of external tools.
+        '(list "-k"
+               (string-append "not test_tool"
+                              ;; not needed
+                              " and not test_black_formatting"
+                              " and not test_flake8_formatting"
+                              " and not test_isort_formatting")))))))
+
 (define (varscan version commit hash)
   (let ((jar-file (string-append "varscan-" version ".jar")))
     (package
