@@ -30,10 +30,12 @@
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages cran)
+  #:use-module (gnu packages databases)
   #:use-module (gnu packages digest)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages ghostscript)
+  #:use-module (gnu packages graph)
   #:use-module (gnu packages image)
   #:use-module (gnu packages java)
   #:use-module (gnu packages linux)
@@ -711,6 +713,78 @@ visualization tool for interactive exploration of large, integrated genomic
 datasets.  It supports a wide variety of data types, including array-based and
 next-generation sequence data, and genomic annotations.")
    (license license:lgpl2.1)))
+
+;; This is tainted because it depends on the tainted
+;; python-gimmemotifs.
+(define-public python-celloracle
+  ;; Pypi has 0.12.1, but there's no corresponding tag in the git
+  ;; repository, which we use because there are no tests in the Pypi
+  ;; version.  So we just take the latest commit.
+  (let ((commit "23c8fcad13da531a6201187dbc1a7baa7697b266")
+        (revision "1"))
+    (package
+      (name "python-celloracle")
+      (version (git-version "0.12.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/morris-lab/CellOracle")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "0b2bgkkh29jacqgpi8748412iqhcv35f89bzv7r61z6vdlvq9hv8"))))
+      (build-system pyproject-build-system)
+      (arguments
+       (list
+        #:test-flags
+        ;; These tests are all about downloading data from the
+        ;; internet.
+        '(list "-k" "not _dl and not test_tutorial_")
+        #:phases
+        '(modify-phases %standard-phases
+           ;; Genomepy needs to write to HOME
+           (add-before 'check 'set-HOME
+             (lambda _ (setenv "HOME" "/tmp")))
+           ;; Numba needs a writable dir to cache functions.
+           (add-before 'check 'set-numba-cache-dir
+             (lambda _ (setenv "NUMBA_CACHE_DIR" "/tmp")))
+           (add-after 'unpack 'relax
+             (lambda _
+               (substitute* "requirements.txt"
+                 (("0.17.1") "0.17.2")))))))
+      (propagated-inputs (list jupyter
+                               python-genomepy
+                               python-gimmemotifs-0.17
+                               python-goatools
+                               python-h5py
+                               python-igraph
+                               python-joblib
+                               python-matplotlib
+                               python-pyarrow
+                               python-scanpy
+                               python-scikit-learn
+                               python-scipy
+                               python-seaborn
+                               python-tqdm
+                               python-umap-learn
+                               python-velocyto
+                               python-vtraag-louvain))
+      (native-inputs
+       (list python-anndata
+             python-cython
+             python-numba
+             python-numpy
+             python-pandas
+             python-pytest))
+      (home-page "https://github.com/morris-lab/CellOracle")
+      (synopsis
+       "In silico gene perturbation analysis and GRN analysis with single cell data")
+      (description
+       "This package provides a Python library for in silico gene
+perturbation analyses.  These libraries use single-cell omics data and
+Gene Regulatory Network models.")
+      (license license:asl2.0))))
 
 ;; This is tainted because it depends on all these non-free tools.
 (define-public python-gimmemotifs
