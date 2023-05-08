@@ -682,6 +682,11 @@ next-generation sequence data, and genomic annotations.")
             (lambda _
               (substitute* "setup.py"
                 (("^cmdclass\\[\"build_py.*") ""))))
+          (add-after 'unpack 'patch-version
+            (lambda _
+              (substitute* "setup.py"
+                (("version =.*")
+                 (string-append "version = \"" #$version "\"")))))
           (add-after 'unpack 'set-HOME
             (lambda _
               (setenv "HOME" "/tmp")))
