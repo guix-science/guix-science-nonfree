@@ -924,7 +924,7 @@ implementation.")
                              python-xdg
                              python-xxhash))
     (inputs
-     (list amd bioprospector meme))
+     (list amd bioprospector homer meme))
     (native-inputs (list python-pytest))
     (home-page "https://github.com/vanheeringen-lab/gimmemotifs/")
     (synopsis "GimmeMotifs is a motif prediction pipeline.")
