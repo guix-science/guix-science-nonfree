@@ -47,6 +47,7 @@
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-build)
   #:use-module (gnu packages python-science)
+  #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages serialization)
   #:use-module (gnu packages statistics)
@@ -785,6 +786,57 @@ next-generation sequence data, and genomic annotations.")
 perturbation analyses.  These libraries use single-cell omics data and
 Gene Regulatory Network models.")
       (license license:asl2.0))))
+
+(define-public python-decoupler
+  (package
+    (name "python-decoupler")
+    (version "1.4.0")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/saezlab/decoupler-py")
+                    (commit "5ab28c22140359222de0f48033051b488e32423b")))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "0wag3x9ggzazms3sng7hl4c2643bv1mir7h6kwys66449w3x45g8"))))
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:test-flags
+      ;; Requires access to internet resources.
+      '(list "--ignore=decoupler/tests/test_omnip.py")
+      #:phases
+      '(modify-phases %standard-phases
+         ;; Numba needs a writable dir to cache functions.
+         (add-before 'build 'set-numba-cache-dir
+           (lambda _
+             (setenv "NUMBA_CACHE_DIR" "/tmp")))
+         ;; Omnipath needs HOME to write a config file
+         (add-before 'build 'set-HOME
+           (lambda _
+             (setenv "HOME" "/tmp"))))))
+    (propagated-inputs
+     (list python-adjusttext
+           python-anndata
+           python-numba
+           python-omnipath
+           python-scanpy
+           python-seaborn
+           python-skranger
+           python-tqdm
+           python-typing-extensions))
+    (native-inputs
+     (list python-pytest))
+    (home-page "https://github.com/saezlab/decoupler-py")
+    (synopsis "Methods to infer biological activities from omics data")
+    (description
+     "Decoupler is a package containing different statistical methods
+to extract biological activities from omics data within a unified
+framework.  This is its faster and memory efficient Python
+implementation.")
+    ;; GPLv3 except for the viper method, which has non-commercial terms.
+    (license license:gpl3)))
 
 ;; This is tainted because it depends on all these non-free tools.
 (define-public python-gimmemotifs
