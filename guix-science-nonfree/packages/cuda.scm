@@ -213,7 +213,7 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
       "https://developer.download.nvidia.com/compute/cuda/11.7.1/local_installers/cuda_11.7.1_515.65.01_linux.run"
       "1nq47szb31fk1a4glsba8dy2h58vr8z7w3pbzv8bfjb5f0lnla2j"))
     (inputs
-     `(("gcc:lib" ,gcc-10 "lib")))))
+     `(("gcc:lib" ,gcc-11 "lib")))))
 
 (define-public cuda-10.2
   (package
