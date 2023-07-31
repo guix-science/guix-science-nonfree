@@ -671,6 +671,34 @@ differential alternative splicing events from RNA-Seq data.")
     (license (list license:gpl2+
                    (nonfree "Personal and academic use only.")))))
 
+(define-public r-pdclust
+  (let ((commit "775bfa6b54d3611a004b326215ef4f07fa20ef34")
+        (revision "1"))
+    (package
+      (name "r-pdclust")
+      (version (git-version "0.1.0" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/hui-tony-zk/PDclust")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1jzgp18mjm51497hm288afx5yy2s066ql79xvbgglafi39qdikpk"))))
+      (properties `((upstream-name . "PDclust")))
+      (build-system r-build-system)
+      (propagated-inputs (list r-domc r-dplyr r-foreach r-tidyr))
+      (native-inputs (list r-knitr))
+      (home-page "https://github.com/hui-tony-zk/PDclust")
+      (synopsis "Pairwise comparisons for single-cell DNA methylation data")
+      (description
+       "This package provides helper functions to do pairwise
+comparisons of commonly covered @code{CpG} sites in single-cell DNA
+Methylation data.")
+      ;; https://github.com/hui-tony-zk/PDclust/issues/1
+      (license (nonfree "Missing license")))))
+
 (define-public igvtools
   (package
    (name "igvtools")
