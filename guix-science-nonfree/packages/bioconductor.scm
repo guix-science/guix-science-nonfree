@@ -113,6 +113,30 @@ increase the power of the identification.")
      (nonfree "https://bioconductor.org/packages/release/bioc/licenses/RankProd/LICENSE"
               "Non-commercial"))))
 
+(define-public r-spia
+  (package
+    (name "r-spia")
+    (version "2.52.0")
+    (source (origin
+              (method url-fetch)
+              (uri (bioconductor-uri "SPIA" version))
+              (sha256
+               (base32
+                "1f0d12y9al89c669y5c7byjgyml33jnn6s9iq1gcxm73ac6ws067"))))
+    (properties `((upstream-name . "SPIA")))
+    (build-system r-build-system)
+    (propagated-inputs (list r-kegggraph))
+    (home-page "http://bioinformatics.oxfordjournals.org/cgi/reprint/btn577v1")
+    (synopsis "Signaling Pathway Impact Analysis")
+    (description
+     "This package implements the @dfn{Signaling Pathway Impact
+Analysis} (SPIA) which uses the information form a list of
+differentially expressed genes and their log fold changes together
+with signaling pathways topology, in order to identify the pathways
+most relevant to the condition under the study.")
+    (license (nonfree "https://bioconductor.org/packages/release/bioc/licenses/SPIA/LICENSE"
+                      "Non-commercial"))))
+
 (define-public r-viper
   (package
     (name "r-viper")
