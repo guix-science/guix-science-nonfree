@@ -1,5 +1,6 @@
 ;;; Copyright © 2016-2021 Roel Janssen <roel@gnu.org>
 ;;; Copyright © 2015-2023 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2023 Navid Afkhami <navid.afkhami@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -670,6 +671,32 @@ differential alternative splicing events from RNA-Seq data.")
     ;; prefixed with a restriction that contradicts the license.
     (license (list license:gpl2+
                    (nonfree "Personal and academic use only.")))))
+
+(define-public r-omixerrpm
+  (let ((commit "184f1cc99aefed722e20eb00eda082348a064c4e")
+        (revision "1"))
+    (package
+      (name "r-omixerrpm")
+      (version (git-version "0.3.3" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/omixer/omixer-rpmR")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "10ipasg8zi4ln13a5zj2l4a35hd3sfy3p6gir0sw0vf3cbc11lnz"))))
+      (properties `((upstream-name . "omixerRpm")))
+      (build-system r-build-system)
+      (home-page "https://github.com/omixer/omixer-rpmR")
+      (synopsis "Metabolic module profiling of microbiome samples")
+      (description
+       "This package provides an R interface for microbiome metabolic
+module profiling with omixer-rpm.")
+      ;; The bundled omixer-rpm.jar is licensed under an Academic
+      ;; non-commercial software license.
+      (license license:gpl3))))
 
 (define-public r-pdclust
   (let ((commit "775bfa6b54d3611a004b326215ef4f07fa20ef34")
