@@ -140,13 +140,13 @@ most relevant to the condition under the study.")
 (define-public r-viper
   (package
     (name "r-viper")
-    (version "1.32.0")
+    (version "1.34.0")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "viper" version))
               (sha256
                (base32
-                "11i2q9nakh534nx2l736id7k1yqhk7jpg32sbfl4vrnh398q86h6"))))
+                "01flc6k6l1fa4zqxfvq5idclw2wsm739pj7kh5f4ismiaz8jw0dp"))))
     (properties `((upstream-name . "viper")))
     (build-system r-build-system)
     (propagated-inputs (list r-biobase r-e1071 r-kernsmooth r-mixtools))
