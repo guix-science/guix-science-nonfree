@@ -1803,13 +1803,13 @@ user-definable seed interaction.")
 (define-public python-chess-hic
   (package
     (name "python-chess-hic")
-    (version "0.3.7")
+    (version "0.3.8")
     (source (origin
               (method url-fetch)
               (uri (pypi-uri "chess-hic" version))
               (sha256
                (base32
-                "121w8p67hlhbr7p8xzwsh2mwf88svy1ck5169zyn801kd5llznkk"))))
+                "0i6j6iabv7n67ppx9xnaxvrqa9vq56qyx2pnnlkl8w85jrxyzxpg"))))
     (build-system pyproject-build-system)
     (arguments '(#:tests? #false)) ;there are none
     (propagated-inputs
@@ -1819,7 +1819,6 @@ user-definable seed interaction.")
            python-intervaltree
            python-kneed
            python-numpy
-           python-msgpack
            python-pandas
            python-pathos
            python-pybedtools
