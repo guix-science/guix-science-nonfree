@@ -62,13 +62,13 @@ supporting evidence.")
 (define-public r-motifdb
   (package
     (name "r-motifdb")
-    (version "1.38.0")
+    (version "1.42.0")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "MotifDb" version))
               (sha256
                (base32
-                "1cyfz0l0yvdii3idaiq5w39yzxlzfpifa4v5pv7hdjfjj83a8rbi"))))
+                "18d0qj9sn4bhfjy2mwsz2nnm41xlsqjslsv69nkhv19w9zd842pw"))))
     (properties `((upstream-name . "MotifDb")))
     (build-system r-build-system)
     (propagated-inputs (list r-biocgenerics
@@ -78,7 +78,7 @@ supporting evidence.")
                              r-rtracklayer
                              r-s4vectors
                              r-splitstackshape))
-    (native-inputs (list r-knitr))
+    (native-inputs (list r-formatr r-knitr r-markdown r-rmarkdown))
     (home-page "https://bioconductor.org/packages/MotifDb")
     (synopsis "Annotated collection of protein-DNA binding sequence motifs")
     (description
