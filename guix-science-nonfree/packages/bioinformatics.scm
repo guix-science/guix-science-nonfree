@@ -536,7 +536,7 @@ datasets (MEME-ChIP).")
   (package
     (inherit meme-4)
     (name "meme")
-    (version "5.5.2")
+    (version "5.5.4")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://meme-suite.org/meme/meme-software/"
@@ -544,7 +544,7 @@ datasets (MEME-ChIP).")
                                   "/meme-" version ".tar.gz"))
               (sha256
                (base32
-                "18q5mddpiphvxb0lah530p3mgpmp3y6gmyngbs4q8xdcim1l81il"))))
+                "0lq1b03jb508y1pp6wsydrdrps8ibqjjqyjf7ibg4nw55cf039nd"))))
     (build-system gnu-build-system)
     (arguments
      (list
