@@ -92,13 +92,13 @@ frequency matrices from 14 public sources, for multiple organisms.")
 (define-public r-rankprod
   (package
     (name "r-rankprod")
-    (version "3.22.0")
+    (version "3.26.0")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "RankProd" version))
               (sha256
                (base32
-                "0rq14h9kjj84krgvfa09jbc5s8yks37fjbcv8z88daaib0j3fq2d"))))
+                "1nhhmwskj8ssapnfnj8hxmdbxknnzgcgbrdw2pzcyyjchqr7n9nf"))))
     (properties `((upstream-name . "RankProd")))
     (build-system r-build-system)
     (propagated-inputs (list r-gmp r-rmpfr))
