@@ -90,10 +90,13 @@
 
   #:export (
 
-	    ;; Concerning versions, we have to keep several
-	    ;; versions at the same time because users want
-	    ;; to be able to install a specific version of
-	    ;; each tool.
+	    ;; Regarding versions, we have to keep several versions at
+	    ;; the same time because users want to be able to install
+	    ;; a specific version of each tool, not necessarily the
+	    ;; latest one. We also need to keep a reproducible
+	    ;; multiple versions of old packages because physics
+	    ;; experiments could last as many as 20 years and need to
+	    ;; rebuild their tools.
 	    
 	    ;; GEANT 4
 

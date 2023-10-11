@@ -90,17 +90,23 @@
 
   #:export (
 
-	    ;; Concerning versions, we have to keep several
-	    ;; versions at the same time because users want
-	    ;; to be able to install a specific version of
-	    ;; each tool.
-
+	    ;; Regarding versions, we have to keep several versions at
+	    ;; the same time because users want to be able to install
+	    ;; a specific version of each tool, not necessarily the
+	    ;; latest one. We also need to keep a reproducible
+	    ;; multiple versions of old packages because physics
+	    ;; experiments could last as many as 20 years and need to
+	    ;; rebuild their tools.
+            
 	    ;; ROOT
-	    
+
+	    ROOT-6.26.10     ;; Ok (thisroot.sh is not even needed)
+
+            ;; TODO (Help needed !)
+            
 	    ;; ROOT-5.28     ;; TODO
 	    ROOT-6.18.04     ;; TODO Ko
 	    ROOT-6.20.02     ;; TODO Ko: LLVM version different from ROOT supported, please try 5.0.x
-	    ROOT-6.26.10     ;; Ok (thisroot.sh is not even needed)
 	    ROOT-6.28.00     ;; TODO Ko: Could not open file for write in copy operation /gnu/store/579xrf7vz85ynjlk62njaczgnayam1ar-llvm-13.0.1/lib/cmake/cling/ClingConfig.cmake.tmp
 	    
 	    ))

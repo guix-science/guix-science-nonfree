@@ -91,10 +91,13 @@
   
   #:export (
 
-	    ;; Concerning versions, we have to keep several
-	    ;; versions at the same time because users want
-	    ;; to be able to install a specific version of
-	    ;; each tool.
+	    ;; Regarding versions, we have to keep several versions at
+	    ;; the same time because users want to be able to install
+	    ;; a specific version of each tool, not necessarily the
+	    ;; latest one. We also need to keep a reproducible
+	    ;; multiple versions of old packages because physics
+	    ;; experiments could last as many as 20 years and need to
+	    ;; rebuild their tools.
 	    
 	    ;; Dependencies
 
@@ -113,15 +116,15 @@
 	    ;; Others
 	    
 	    Unuran-1.8.1       ;; Ok
-	    clang-9.0.1        ;; 
-	    davix-0.8.3        ;; TODO
-	    dcap-2.47.12       ;; TODO
-	    libAfterImage-1.20 ;; TODO
-	    llvm-5             ;; TODO
-	    llvm-9.0.1         ;; TODO
-	    vdt-0.4.3          ;; TODO
+	    clang-9.0.1        ;; Ok
+	    davix-0.8.3        ;; Ok
+	    dcap-2.47.12       ;; Ok
+	    libAfterImage-1.20 ;; Ok
+	    llvm-5             ;; Ok
+	    llvm-9.0.1         ;; Ok
+	    vdt-0.4.3          ;; Ok 
 
-	    ;; -----
+	    ;; TODO (Help needed !)
 	    
 	    davix-0.6.4	                ;; TODO Failed
 	    cubix-3.0                   ;; TODO depends on ROOT
@@ -955,19 +958,6 @@ in the @code{debug} output), and binutils.")))
             ;; We must have 6 spaces before "home"
             (("      home=.*$") (string-fortranize (string-append "      path=\"" out "/talys/structure/\""))))
 
-;; access("/gnu/store/g0s0b1d58lp1x097xbywmv7p84yqsz4d-TALYS-1.96-1.96 talys/structure/abundance/H.abun", F_OK) = -1 ENOENT (No such file or directory)
-
-           
-           
-;; "The maximum length of the path is 60 characters" Why ??
-;; inquire FORTRAN ?
-
-;; # strings /gnu/store/g1vyssj7i2724xm9pvfx88r3rn60gp7k-TALYS-1.96-1.96/bin/talys  | grep gnu | grep structure
-;; /gnu/store/g1vyssj7i2724xm9pvfx88r3rn60gp7k-TALYS-1.96-1.96&/talys/structure/machine.f
-           
-;;      path="/gnu/store/5hj9nqpp94vwn6x8vhmpkvsqniic6311-TALYS-1.96-1.96/
-;;     &talys/structure/"
-           
            (let ((current-dir (getcwd)))
              (invoke BASH "talys.setup")
              (chdir current-dir))
@@ -2397,32 +2387,44 @@ experiments and other diverse scientific communities.")
       (base32
        "16hwp3qa54c3a3v7h8nlw0fh5criqh0hlr1skybyk0cz70gyx880"))
      (modules '((guix build utils)))
-     (snippet '(substitute*
-		;; https://github.com/root-project/cling/issues/438
-		;; Error:
-		;; llvm::orc::LegacyRTDyldObjectLinkingLayer::LinkedObjects is private within this context
-		"include/llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
-		(("std::map<VModuleKey, std::unique_ptr<LinkedObject>> LinkedObjects;")
-		 "public:\n std::map<VModuleKey, std::unique_ptr<LinkedObject>> LinkedObjects;\n  private:\n")))
-		;; A verifier dans le code si le substitute* a bien marche
+     (snippet
+      '(begin
+         (substitute*
+          "utils/benchmark/src/benchmark_register.h"
+          (("#include <vector>")
+           (string-append
+            "#include <limits>" (string #\newline)
+            "#include <vector>")))
+         (substitute*
+	  ;; https://github.com/root-project/cling/issues/438
+	  ;; Error:
+	  ;; llvm::orc::LegacyRTDyldObjectLinkingLayer::LinkedObjects is private within this context
+	  "include/llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+	  (("std::map<VModuleKey, std::unique_ptr<LinkedObject>> LinkedObjects;")
+	   "public:\n std::map<VModuleKey, std::unique_ptr<LinkedObject>> LinkedObjects;\n  private:\n"))))
+     ;; A verifier dans le code si le substitute* a bien marche
      (patches (search-patches
                "llvm-9-fix-bitcast-miscompilation.patch"
                "llvm-9-fix-scev-miscompilation.patch"
                "llvm-9-fix-lpad-miscompilation.patch"))))
    (arguments
     (if (target-riscv64?)
-	(substitute-keyword-arguments (package-arguments llvm-10)
-				      ((#:phases phases)
-				       `(modify-phases ,phases
-						       (add-after 'unpack 'patch-dsymutil-link
-								  (lambda _
-								    (substitute* "tools/dsymutil/CMakeLists.txt"
-										 (("endif\\(APPLE\\)")
-										  (string-append
-										   "endif(APPLE)\n\n"
-										   "if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES \"riscv64\")\n"
-										   "  target_link_libraries(dsymutil PRIVATE atomic)\n"
-										   "endif()"))))))))
+	(substitute-keyword-arguments
+         (package-arguments llvm-10)
+	 ((#:phases phases)
+	  `(modify-phases
+            ,phases
+	    (add-after
+             'unpack 'patch-dsymutil-link
+	     (lambda _
+	       (substitute*
+                "tools/dsymutil/CMakeLists.txt"
+		(("endif\\(APPLE\\)")
+		 (string-append
+		  "endif(APPLE)\n\n"
+		  "if (CMAKE_HOST_SYSTEM_PROCESSOR MATCHES \"riscv64\")\n"
+		  "  target_link_libraries(dsymutil PRIVATE atomic)\n"
+		  "endif()"))))))))
 	(package-arguments llvm-10)))))
 
 (define* (clang-runtime-from-llvm llvm
@@ -2447,7 +2449,7 @@ experiments and other diverse scientific communities.")
    (arguments
     `( ;; Don't use '-g' during the build to save space.
       #:build-type "Release"
-      #:tests? #f                      ; Tests require gtest
+      #:tests? #f                       ; Tests require gtest
       #:modules ((srfi srfi-1)
                  (ice-9 match)
                  ,@%cmake-build-system-modules)
