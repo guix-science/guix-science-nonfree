@@ -106,14 +106,14 @@
             
 	    CLHEP-2.3.4         ;; Ok
 	    nodejs-16.13.1      ;; Ok
-	    TALYS-1.96          ;; 
-	    texworks-0.6.7      ;; TODO
-	    timing-gen-0.9.8    ;; TODO
+	    TALYS-1.96          ;; Ok
+	    texworks-0.6.7      ;; Ok
+	    timing-gen-0.9.8    ;; Ok
 
 	    ;; Others
 	    
-	    Unuran-1.8.1       ;; TODO
-	    clang-9.0.1        ;; TODO
+	    Unuran-1.8.1       ;; Ok
+	    clang-9.0.1        ;; 
 	    davix-0.8.3        ;; TODO
 	    dcap-2.47.12       ;; TODO
 	    libAfterImage-1.20 ;; TODO
@@ -914,18 +914,25 @@ in the @code{debug} output), and binutils.")))
                        (loop (+ index maxchar)
                              (cons sub result)))))))
 
-           (let ((fortran-max-length 71))
-             (if (<= (string-length str) fortran-max-length) str
-                 (let ((mylist (string-cut str fortran-max-length)))
-                   (apply string-append
-                          (cons (string-append (car mylist) "&" (string #\newline))
-                                ;; FORTRAN 77:
-                                ;; https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Continuation-Line.html 
-                                ;; A continuation line is any line that both
-                                ;; - Contains a continuation character, and
-                                ;; - Contains only spaces in columns 1 through 5 
-                                (map (lambda (str) (string-append "     &" str (string #\newline)))
-                                     (cdr mylist))))))))
+           (let ((fortran-max-length 72)
+                 (len (string-length str)))
+             (if (<= len fortran-max-length) str
+                 (let* ((first  (substring str 0 fortran-max-length))
+                        (rest   (substring str fortran-max-length len))
+                        ;; The first 6 characters must be " " followed
+                        ;; by a continuation character (here '&')
+                        (mylist (string-cut rest (- fortran-max-length 6))))
+                   (apply
+                    string-append
+                    (cons (string-append first (string #\newline))
+                          ;; FORTRAN 77:
+                          ;; https://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/Continuation-Line.html 
+                          ;; A continuation line is any line that both
+                          ;; - Contains a continuation character, and
+                          ;; - Contains only spaces in columns 1 through 5 
+                          (map (lambda (str)
+                                 (string-append "     &" str (string #\newline)))
+                               mylist)))))))
          
          (let* ((source (assoc-ref %build-inputs "source"))
                 (out (assoc-ref %outputs "out"))
@@ -948,6 +955,16 @@ in the @code{debug} output), and binutils.")))
             ;; We must have 6 spaces before "home"
             (("      home=.*$") (string-fortranize (string-append "      path=\"" out "/talys/structure/\""))))
 
+;; access("/gnu/store/g0s0b1d58lp1x097xbywmv7p84yqsz4d-TALYS-1.96-1.96 talys/structure/abundance/H.abun", F_OK) = -1 ENOENT (No such file or directory)
+
+           
+           
+;; "The maximum length of the path is 60 characters" Why ??
+;; inquire FORTRAN ?
+
+;; # strings /gnu/store/g1vyssj7i2724xm9pvfx88r3rn60gp7k-TALYS-1.96-1.96/bin/talys  | grep gnu | grep structure
+;; /gnu/store/g1vyssj7i2724xm9pvfx88r3rn60gp7k-TALYS-1.96-1.96&/talys/structure/machine.f
+           
 ;;      path="/gnu/store/5hj9nqpp94vwn6x8vhmpkvsqniic6311-TALYS-1.96-1.96/
 ;;     &talys/structure/"
            
@@ -2898,7 +2915,7 @@ TGA and GIF being supported internally.")
        "14si7jqq6mfk5whfbnvdhm97ylg0cpw3s12hcjndnmvqhnbaww62"))))
    (build-system gnu-build-system)
    (inputs
-    `())
+    `(("perl" ,perl)))
 
    (arguments
     '(#:configure-flags '("--with-pic")))
