@@ -87,8 +87,6 @@
   #:use-module  (ice-9 regex)
   #:use-module  (srfi srfi-1)
   
-  ;; TODO: Verify if still Ok after guix pull
-  
   #:export (
 
 	    ;; Regarding versions, we have to keep several versions at
