@@ -1,8 +1,8 @@
 Non-free Guix science packages
 ==============================
 
-.. image:: https://github.com/guix-science/guix-science-nonfree/workflows/build/badge.svg
-   :target: https://github.com/guix-science/guix-science-nonfree/actions
+.. image:: https://guix.bordeaux.inria.fr/jobset/guix-science-nonfree/badge.svg?type=0
+   :target: https://guix.bordeaux.inria.fr/jobset/guix-science-nonfree
 
 This GNU Guix_ channel provides non-free scientific software.
 
