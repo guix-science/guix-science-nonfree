@@ -2,6 +2,7 @@
 
 ;;;
 ;;; Copyright © 2021 Quantile Technologies <phil.beadling@quantile.com>
+;;; Copyright © 2023 Ricardo Wurmus <rekado@elephly.net>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -21,24 +22,23 @@
   #:use-module (guix-science-nonfree licenses)
   #:use-module (guix packages)
   #:use-module (guix download) ;; url-fetch
-  #:use-module (guix git) ;; git-checkout
+  #:use-module (guix git)      ;; git-checkout
+  #:use-module (guix utils)
   #:use-module (gnu packages elf)) ;; patchelf
 
 (define-public python-gurobipy
   (package
     (name "python-gurobipy")
-    (version "9.0.1")
+    (version "10.0.3")
     (source (origin
               (method url-fetch)
               (uri (string-append "https://packages.gurobi.com/"
-                                  (substring version 0 3) "/gurobi"
+                                  (version-major+minor version) "/gurobi"
                                   version "_linux64.tar.gz"))
               (sha256
                (base32
-                "1dvcz0ph17y7dlsn2z5akzhbnc32f6wd1ppfc7p0w60il76zmqhp"))))
+                "10yah1bhiic6h7wmj31w7kbariwpp97a241ww66cwhhc27didyc2"))))
     (build-system python-build-system)
-    (native-inputs
-     `(("patchelf" ,patchelf)))
     (arguments
      `(#:use-setuptools? #f ;; distuils package
        #:tests? #f ;; no tests in package
@@ -51,7 +51,7 @@
          (add-after 'install 'install-gurobi-library
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((dir (string-append (site-packages inputs outputs)
-                                        "gurobipy/"))
+                                        "/gurobipy/"))
                     (lib-to-install (string-append "libgurobi.so." ,(package-version this-package)))
                     (softlink-version (string-split ,(package-version this-package) #\.))
                     (softlink-lib (string-append
@@ -66,6 +66,7 @@
                  (invoke "chmod" "-v" "+w" lib-change-rpath)
                  (invoke "patchelf" "--debug" "--set-rpath" "$ORIGIN" lib-change-rpath)
                  (invoke "chmod" "-v" "-w" lib-change-rpath))))))))
+    (native-inputs (list patchelf))
     (home-page "https://www.gurobi.com/products/gurobi-optimizer/")
     (synopsis
      "Python interface to the Gurobi Optimizer")
