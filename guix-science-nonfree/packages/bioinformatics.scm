@@ -1513,24 +1513,23 @@ in the human genome.")
                 "1qp05na2lb7w35nqii9gzv4clmppi3hnk5w3kzfpz5sz27fw1lym"))))
     (build-system trivial-build-system)
     (arguments
-     `(#:modules ((guix build utils))
-       #:builder
-       (begin
-         (use-modules (guix build utils))
-         (let ((source-file (assoc-ref %build-inputs "source"))
-               (output-dir (string-append %output "/share/freec"))
-               (tar (string-append (assoc-ref %build-inputs "tar") "/bin/tar"))
-               (PATH (string-append (assoc-ref %build-inputs "gzip") "/bin")))
-           (setenv "PATH" PATH)
-           (mkdir-p output-dir)
-           (with-directory-excursion output-dir
-             (system* tar "-xvf" source-file))))))
-    (inputs
-     `(("tar" ,tar)
-       ("gzip" ,gzip)))
+     (list
+      #:modules '((guix build utils))
+      #:builder
+      #~(begin
+          (use-modules (guix build utils))
+          (let ((output-dir (string-append #$output "/share/freec"))
+                (tar (string-append #$(this-package-input "tar") "/bin/tar"))
+                (PATH (string-append #$(this-package-input "gzip") "/bin")))
+            (setenv "PATH" PATH)
+            (mkdir-p output-dir)
+            (with-directory-excursion output-dir
+              (invoke tar "-xvf" #$source))))))
+    (inputs (list gzip tar))
     (home-page "http://boevalab.com/FREEC")
-    (synopsis "")
-    (description "")
+    (synopsis "Mappability track for hg19 genome")
+    (description "This package provides the mappability track for the
+hg19 human genome with 100 base pair read length.")
     ;; No license specified.
     (license (license:non-copyleft "file:///dev/null"))))
 
