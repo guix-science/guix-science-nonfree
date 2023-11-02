@@ -1037,50 +1037,42 @@ prediction pipeline for ChIP-seq experiments.")
                 (sha256 (base32 hash))))
       (build-system ant-build-system)
       (arguments
-       `(#:tests? #f ; No test target.
-         #:phases
-         (modify-phases %standard-phases
-           (replace 'unpack
-             (lambda _
-               (mkdir "source")
-               (chdir "source")
-               (and
-                ;; Unpack the Java archive containing the source files.
-                (zero? (system* "jar" "xf" (assoc-ref %build-inputs "source")))
-                ;; Remove existing compiled output.
-                (with-directory-excursion "net/sf/varscan/"
-                  (for-each (lambda (file)
-                              (unless (string= (string-take-right file 5) ".java")
-                                (zero? (system* "rm" file))))
-                            (find-files "." #:directories? #f))))))
-           (replace 'build
-             (lambda _
-               ;; Keep a list of files to be included in the JAR.
-               (let ((out-files '("META-INF/MANIFEST.MF"))
-                     (sources-dir "net/sf/varscan/"))
-                 (and
+       (list
+        #:tests? #f ; No test target.
+        #:phases
+        #~(modify-phases %standard-phases
+            (replace 'unpack
+              (lambda* (#:key source #:allow-other-keys)
+                (mkdir "source")
+                (chdir "source")
+                (and
+                 ;; Unpack the Java archive containing the source files.
+                 (invoke "jar" "xf" source)
+                 ;; Remove existing compiled output.
+                 (with-directory-excursion "net/sf/varscan/"
+                   (for-each (lambda (file)
+                               (unless (string= (string-take-right file 5) ".java")
+                                 (delete-file file)))
+                             (find-files "." #:directories? #f))))))
+            (replace 'build
+              (lambda _
+                (let ((sources-dir "net/sf/varscan/"))
                   (with-directory-excursion sources-dir
                     (for-each
                      (lambda (file)
                        (when (string= (string-take-right file 5) ".java")
                          ;; Compile the source files.
-                         (zero? (system* "javac" file))
-                         ;; Add to list of files to be included in the JAR.
-                         (set! out-files
-                               (append
-                                out-files
-                                (list (string-append sources-dir
-                                  (string-drop-right (string-drop file 2) 5)
-                                  ".class"))))))
+                         (invoke "javac" file)))
                      (find-files "." #:directories? #f)))
                   ;; Construct the Java archive.
-                  (let ((params (append '("jar" "cfm" ,jar-file) out-files)))
-                    (zero? (apply system* params)))))))
-           (replace 'install
-             (lambda _
-               (let ((out (string-append (assoc-ref %outputs "out")
-                                         "/share/java/varscan/")))
-                 (install-file ,jar-file out)))))))
+                  (apply invoke "jar" "cfm" #$jar-file
+                         (cons "META-INF/MANIFEST.MF"
+                               (find-files sources-dir
+                                           "\\.class$"))))))
+            (replace 'install
+              (lambda _
+                (install-file #$jar-file
+                              (string-append #$output "/share/java/varscan/")))))))
       (home-page "http://dkoboldt.github.io/varscan/")
       (synopsis "Variant detection in massively parallel sequencing data")
       (description "")
