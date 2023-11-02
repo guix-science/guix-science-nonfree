@@ -1,5 +1,5 @@
 ;;; Copyright © 2018, 2019, 2020 Inria
-;;; Copyright © 2021, 2022 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2021-2023 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -229,7 +229,10 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
         #~(modify-phases #$phases
             ;; This phase doesn't work as is for 10.2.
             (delete 'remove-superfluous-stuff)
-
+            (add-after 'unpack 'fix-isinf
+              (lambda _
+                (substitute* "builds/cuda-toolkit/include/cuda_fp16.hpp"
+                  (("\\(::isinf") "(std::isinf"))))
             (add-after 'install 'really-install-libdevice
               (lambda _
                 ;; XXX: The 'install' phase of CUDA 11.0 looks for libdevice
