@@ -1,5 +1,3 @@
-;; -*- mode: scheme; eval: (guix-devel-mode 1); geiser-scheme-implementation: guile -*-
-
 ;;;
 ;;; Copyright © 2021 Quantile Technologies <phil.beadling@quantile.com>
 ;;; Copyright © 2023 Ricardo Wurmus <rekado@elephly.net>
@@ -21,10 +19,10 @@
   #:use-module (guix build-system python)
   #:use-module (guix-science-nonfree licenses)
   #:use-module (guix packages)
-  #:use-module (guix download) ;; url-fetch
-  #:use-module (guix git)      ;; git-checkout
+  #:use-module (guix download)
+  #:use-module (guix git)
   #:use-module (guix utils)
-  #:use-module (gnu packages elf)) ;; patchelf
+  #:use-module (gnu packages elf))
 
 (define-public python-gurobipy
   (package
@@ -40,32 +38,34 @@
                 "10yah1bhiic6h7wmj31w7kbariwpp97a241ww66cwhhc27didyc2"))))
     (build-system python-build-system)
     (arguments
-     `(#:use-setuptools? #f ;; distuils package
-       #:tests? #f ;; no tests in package
+     `(#:use-setuptools? #f ;distuils package
+       #:tests? #f ;no tests in package
        #:phases
        (modify-phases %standard-phases
-         (add-after 'unpack 'cd-to-source-dir
-           (lambda _ (chdir "linux64") #t))
+         (add-after 'unpack 'chdir
+           (lambda _ (chdir "linux64")))
          ;; copy and symlink gurobi binary and adjust python lib rpath
          ;; to look for it in it's own directory.
          (add-after 'install 'install-gurobi-library
            (lambda* (#:key inputs outputs #:allow-other-keys)
              (let* ((dir (string-append (site-packages inputs outputs)
                                         "/gurobipy/"))
-                    (lib-to-install (string-append "libgurobi.so." ,(package-version this-package)))
-                    (softlink-version (string-split ,(package-version this-package) #\.))
-                    (softlink-lib (string-append
-                                   "libgurobi"
-                                   (car softlink-version)
-                                   (cadr softlink-version)
-                                   ".so"))
+                    (lib-to-install
+                     (string-append "libgurobi.so."
+                                    ,(package-version this-package)))
+                    (softlink-version
+                     (string-filter char-set:digit
+                                    ,(version-major+minor
+                                      (package-version this-package))))
+                    (softlink-lib
+                     (string-append "libgurobi" softlink-version ".so"))
                     (lib-change-rpath "gurobipy.so"))
                (install-file (string-append "lib/" lib-to-install) dir)
                (with-directory-excursion dir
                  (symlink lib-to-install softlink-lib)
-                 (invoke "chmod" "-v" "+w" lib-change-rpath)
+                 (chmod lib-change-rpath #o666)
                  (invoke "patchelf" "--debug" "--set-rpath" "$ORIGIN" lib-change-rpath)
-                 (invoke "chmod" "-v" "-w" lib-change-rpath))))))))
+                 (chmod lib-change-rpath #o555))))))))
     (native-inputs (list patchelf))
     (home-page "https://www.gurobi.com/products/gurobi-optimizer/")
     (synopsis
