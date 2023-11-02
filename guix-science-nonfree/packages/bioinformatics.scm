@@ -1692,7 +1692,7 @@ sequences with a predefined structure (inverse folding) is provided.")
                      (string-append (getcwd) "/tests:"
                                     (getenv "PERL5LIB"))))))))
     (native-inputs
-     (list swig))))
+     (list swig gcc-8))))
 
 (define-public viennarna-1.8
   (package (inherit viennarna)
