@@ -672,6 +672,44 @@ differential alternative splicing events from RNA-Seq data.")
     (license (list license:gpl2+
                    (nonfree "Personal and academic use only.")))))
 
+(define-public r-flowsorted-bloodextended-epic
+  (let ((commit "b32d3a069218874f0e87f84389bab62be94fe9ee")
+        (revision "1"))
+    (package
+      (name "r-flowsorted-bloodextended-epic")
+      (version (git-version "1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url
+                "https://github.com/immunomethylomics/FlowSorted.BloodExtended.EPIC")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "1jncfxrpdllcb1059p8lha38q6nj9c3c05znidwkjw76mnwjkiys"))))
+      (properties `((upstream-name . "FlowSorted.BloodExtended.EPIC")))
+      (build-system r-build-system)
+      (propagated-inputs (list r-experimenthub
+                          r-flowsorted-blood-epic
+                          r-genefilter
+                          r-illuminahumanmethylationepicanno-ilm10b4-hg19
+                          r-minfi
+                          r-nlme
+                          r-quadprog
+                          r-s4vectors
+                          r-summarizedexperiment))
+      (native-inputs (list r-knitr))
+      (home-page
+       "https://github.com/immunomethylomics/FlowSorted.BloodExtended.EPIC")
+      (synopsis
+       "Illumina EPIC data on extended immunomagnetic sorted blood populations")
+      (description
+       "Raw data for improved blood cell estimation in minfi and similar packages.")
+      ;; None free software
+      (license (license:fsdg-compatible
+                "https://github.com/immunomethylomics/FlowSorted.BloodExtended.EPIC/blob/main/LICENSE")))))
+
 (define-public r-omixerrpm
   (let ((commit "184f1cc99aefed722e20eb00eda082348a064c4e")
         (revision "1"))
