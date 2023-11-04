@@ -155,7 +155,6 @@
                        "onnx" "protobuf" "pthreadpool"
                        "pybind11" "python-enum" "python-peachpy"
                        "python-six" "tbb" "XNNPACK" "zstd"))))))
-    (name "python-pytorch-with-cuda")
     (arguments
      (substitute-keyword-arguments (package-arguments python-pytorch)
        ((#:phases phases '%standard-phases)
