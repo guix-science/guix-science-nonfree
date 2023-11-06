@@ -93,23 +93,24 @@ frequency matrices from 14 public sources, for multiple organisms.")
 (define-public r-rankprod
   (package
     (name "r-rankprod")
-    (version "3.26.0")
-    (source (origin
-              (method url-fetch)
-              (uri (bioconductor-uri "RankProd" version))
-              (sha256
-               (base32
-                "1nhhmwskj8ssapnfnj8hxmdbxknnzgcgbrdw2pzcyyjchqr7n9nf"))))
+    (version "3.28.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (bioconductor-uri "RankProd" version))
+       (sha256
+        (base32 "139q9aw4mbq1ld5z7hfs1nxcg5bw6igfcd4mx3acsndmanb47im4"))))
     (properties `((upstream-name . "RankProd")))
     (build-system r-build-system)
     (propagated-inputs (list r-gmp r-rmpfr))
     (home-page "https://bioconductor.org/packages/RankProd")
     (synopsis "Identify differentially expressed genes")
     (description
-     "Non-parametric method for identifying differentially expressed (up- or down-
-regulated) genes based on the estimated percentage of false predictions (pfp).
-The method can combine data sets from different origins (meta-analysis) to
-increase the power of the identification.")
+     "Non-parametric method for identifying differentially
+expressed (up- or down- regulated) genes based on the estimated
+percentage of false predictions (pfp).  The method can combine data
+sets from different origins (meta-analysis) to increase the power of
+the identification.")
     (license
      (nonfree "https://bioconductor.org/packages/release/bioc/licenses/RankProd/LICENSE"
               "Non-commercial"))))
