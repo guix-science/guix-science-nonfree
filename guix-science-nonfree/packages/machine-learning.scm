@@ -184,7 +184,7 @@
 
 (define-public python-pytorch-with-cuda11
   (package
-    (inherit python-pytorch-with-cuda10)
+    (inherit python-pytorch)
     (name "python-pytorch-with-cuda11")
     (arguments
      (substitute-keyword-arguments (package-arguments python-pytorch-with-cuda10)
@@ -198,8 +198,8 @@
                  (("USE_NCCL \"Use NCCL\" ON")
                   "USE_NCCL \"Use NCCL\" OFF"))))))))
     (inputs
-     (modify-inputs (package-inputs python-pytorch-with-cuda10)
-       (replace "cuda-toolkit" cuda-11.7)
+     (modify-inputs (package-inputs python-pytorch)
+       (append cuda-11.7)
        (replace "gloo" gloo-cuda11)))
     (propagated-inputs
      (package-propagated-inputs python-pytorch))
