@@ -1,5 +1,5 @@
 ;;; Copyright © 2016-2021 Roel Janssen <roel@gnu.org>
-;;; Copyright © 2015-2023 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2015-2024 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;; Copyright © 2023 Navid Afkhami <navid.afkhami@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
@@ -22,6 +22,7 @@
   #:use-module (gnu packages)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages algebra)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
   #:use-module (gnu packages bioconductor)
@@ -1230,6 +1231,81 @@ as efficiently and effectively as possible.")
           (mkdir-p output-dir)
           (copy-file source-file
                      (string-append output-dir "/clinvar.vcf.gz"))))))))
+
+(define-public cufflinks
+  ;; This commit includes build fixes
+  (let ((commit "dc3b0cb72a4ac2b6bbc887099e71fc0c21e107b7")
+        (revision "1"))
+    (package
+      (name "cufflinks")
+      (version (git-version "2.2.1" revision commit))
+      (source (origin
+                (method git-fetch)
+                (uri (git-reference
+                      (url "https://github.com/cole-trapnell-lab/cufflinks")
+                      (commit commit)))
+                (file-name (git-file-name name version))
+                (sha256
+                 (base32
+                  "1mgmakzg4g174ry0idyzjwysssb5ak72ybk0qha8vi6raylhd3if"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:make-flags
+        #~(list
+           ;; Cufflinks must be linked with various boost libraries.
+           (string-append "BOOST_LDFLAGS=-L"
+                          #$(this-package-input "boost")
+                          "/lib"))
+        #:phases
+        '(modify-phases %standard-phases
+           (add-after 'unpack 'fix-build-system
+             (lambda _
+               (setenv "CFLAGS" "-fcommon")
+               ;; Remove duplicate AM_INIT_AUTOMAKE macro.
+               (substitute* "configure.ac"
+                 (("AM_INIT_AUTOMAKE\n") ""))
+               ;; The includes for "eigen" are located in a subdirectory.
+               (substitute* "ax_check_eigen.m4"
+                 (("ac_eigen_path/include")
+                  "ac_eigen_path/include/eigen3")))))
+        #:configure-flags
+        #~(cons* (string-append "--with-bam="
+                                #$(this-package-input "htslib"))
+                 (string-append "--with-eigen="
+                                #$(this-package-input "eigen"))
+                 (map (lambda (lib)
+                        (string-append "--with-boost-" lib "=boost_" lib))
+                      '("system"
+                        "filesystem"
+                        "serialization"
+                        "thread")))))
+      (inputs
+       (list eigen
+             htslib
+             boost-1.68              ;latest boost doesn't allow c++03
+             python-2
+             zlib))
+      (native-inputs
+       (list autoconf automake))
+      (home-page "http://cole-trapnell-lab.github.io/cufflinks/")
+      (synopsis "Transcriptome assembly and RNA-Seq expression analysis")
+      (description
+       "Cufflinks assembles RNA transcripts, estimates their abundances,
+and tests for differential expression and regulation in RNA-Seq
+samples.  It accepts aligned RNA-Seq reads and assembles the
+alignments into a parsimonious set of transcripts.  Cufflinks then
+estimates the relative abundances of these transcripts based on how
+many reads support each one, taking into account biases in library
+preparation protocols.")
+      ;; The sources include a modified third-party library "locfit"
+      ;; that is released under a license asking any use for benchmarks
+      ;; to be authorized.  A GPL version of locfit (by the same author)
+      ;; exists in the form of "r-locfit", but it cannot be used without
+      ;; modifications.
+      ;; See also https://github.com/cole-trapnell-lab/cufflinks/issues/129
+      (license (list license:boost1.0
+                     (nonfree "Not to be used for benchmarks"))))))
 
 (define-public dbsnp
   (package
