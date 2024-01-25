@@ -673,6 +673,40 @@ differential alternative splicing events from RNA-Seq data.")
     (license (list license:gpl2+
                    (nonfree "Personal and academic use only.")))))
 
+(define-public r-cellalign
+  (let ((commit "30fb085bcf45280e1706450e9cfcba3728cda6d8")
+        (revision "1"))
+    (package
+      (name "r-cellalign")
+      (version (git-version "0.1.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/shenorrLabTRDF/cellAlign")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1v0ci71zbrmr1l2xmljdl6ks508fmhh6sdc3iglgd3cj16d0ahj6"))))
+      (properties `((upstream-name . "cellAlign")))
+      (build-system r-build-system)
+      (propagated-inputs
+       (list r-dtw
+             r-ggplot2
+             r-pheatmap
+             r-rcpp
+             r-reshape2))
+      (home-page "https://github.com/shenorrLabTRDF/cellAlign")
+      (synopsis "Global and local alignment of single cell trajectories")
+      (description
+       " CellAlign is a tool for quantitative comparison of expression
+dynamics within or between single-cell trajectories. The input to the
+CellAlign workflow is any trajectory vector that orders single cell
+expression with a pseudo-time spacing and the expression matrix for
+the cells used to define the trajectory.")
+      (license (nonfree "Commercial use is forbidden.")))))
+
 (define-public r-flowsorted-bloodextended-epic
   (let ((commit "b32d3a069218874f0e87f84389bab62be94fe9ee")
         (revision "1"))
