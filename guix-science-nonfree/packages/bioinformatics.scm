@@ -411,6 +411,25 @@ factor binding sites among upstream sequences from co-regulated
 genes.")
     (license (nonfree "Academic use only."))))
 
+(define-public macs-1
+  (package (inherit macs)
+    (name "macs")
+    (version "1.4.3")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append
+                    "https://pypi.python.org/packages/source/M/MACS/MACS-"
+                    version ".tar.gz"))
+              (sha256
+               (base32
+                "17lbf76gkisrxhnjwf8iw4pvinny2376dp9dyrgald2l0ww6s4d9"))
+              (patches (search-patches "macs-1.4-fix-parser.patch"))))
+    (build-system python-build-system)
+    (arguments `(#:tests? #false #:python ,python-2))
+    (inputs '())
+    (native-inputs '())
+    (license artistic-1.0)))
+
 (define-public meme-4
   (package
     (name "meme")

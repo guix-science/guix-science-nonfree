@@ -1,0 +1,24 @@
+Downloaded from http://ashishagarwal.org/2011/03/26/macs14-patch/.
+This patch corrects a problem with the parser when many of the initial
+reads in an input SAM file are unaligned.
+
+This patch has not been accepted upstream yet, but a bug report has
+been opened: https://github.com/taoliu/MACS/issues/82
+
+--- a/lib/IO/Parser.py	2011-02-14 15:50:12.000000000 -0500
++++ b/lib/IO/Parser.py	2011-03-26 14:50:29.000000000 -0400
+@@ -641,11 +641,13 @@
+         s = 0
+         n = 0
+         m = 0
+-        while n<10 and m<1000:
++        c = 1000
++        while n<10 and m<c:
+             m += 1
+             thisline = self.fhd.readline()
+             (chromosome,fpos,strand) = self.__fw_parse_line(thisline)
+             if not fpos or not chromosome:
++                if c - m < 10: c += 1000
+                 continue
+             thisline = thisline.rstrip()
+             thisfields = thisline.split("\t")
