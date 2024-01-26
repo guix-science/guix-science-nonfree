@@ -195,6 +195,7 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                                            ((or "." "..") #f)
                                            (_ #t))))
 
+                  (copy-recursively "cuda_cupti/extras/CUPTI" #$output)
                   ;; 'cicc' needs that directory.
                   (copy-recursively "cuda_nvcc/nvvm/libdevice"
                                     (string-append #$output "/nvvm/libdevice")))))
