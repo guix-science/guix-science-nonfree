@@ -469,3 +469,12 @@
                                             "jax_cuda_plugin.*\\.whl$"))))
                 (install-file wheel "dist")))))))
     (native-inputs (list python-jaxlib/wheel-with-cuda11))))
+
+(define-public python-jax-with-cuda11
+  (package
+    (inherit python-jax)
+    (name "python-jax-with-cuda11")
+    (propagated-inputs
+     (modify-inputs (package-propagated-inputs python-jax)
+       (append python-jax-cuda-plugin-with-cuda11)
+       (replace "python-jaxlib" python-jaxlib-with-cuda11)))))
