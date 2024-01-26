@@ -1,5 +1,5 @@
 ;;; Copyright © 2018, 2019, 2020 Inria
-;;; Copyright © 2021-2023 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
+;;; Copyright © 2021-2024 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;;
 ;;; This program is free software; you can redistribute it and/or modify it
 ;;; under the terms of the GNU General Public License as published by
@@ -291,3 +291,96 @@ of glibc and disable float128 support.  This is required allow the use of
 See also
 @url{https://devtalk.nvidia.com/default/topic/1023776/cuda-programming-and-performance/-request-add-nvcc-compatibility-with-glibc-2-26/1}.")
     (license license:gpl3+)))
+
+
+;; Visit <https://docs.nvidia.com/deeplearning/cudnn/archives/index.html> for the support matrix.
+(define-syntax-rule (cudnn-source url hash)
+  (origin
+    (uri url)
+    (sha256 (base32 hash))
+    (method url-fetch)))
+
+(define (make-cudnn version origin)
+  (package
+    (name "cuda-toolkit-cudnn")
+    (version version)
+    (source origin)
+    (supported-systems '("x86_64-linux"))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:modules '((guix build utils)
+                  (guix build gnu-build-system)
+                  (ice-9 match))
+
+      ;; Let's not publish or obtain substitutes for that.
+      #:substitutable? #f
+
+      #:strip-binaries? #f              ;no need
+
+      ;; XXX: This would check DT_RUNPATH, but patchelf populate DT_RPATH,
+      ;; not DT_RUNPATH.
+      #:validate-runpath? #f
+
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'configure)
+          (delete 'check)
+          (replace 'build
+            (lambda* (#:key inputs #:allow-other-keys)
+              (define libc
+                (assoc-ref inputs "libc"))
+              (define gcc-lib
+                (assoc-ref inputs "gcc:lib"))
+              (define ld.so
+                (search-input-file inputs #$(glibc-dynamic-linker)))
+              (define rpath
+                (string-join (list "$ORIGIN"
+                                   (string-append #$output "/lib")
+                                   (string-append #$output "/nvvm/lib64")
+                                   (string-append libc "/lib")
+                                   (string-append gcc-lib "/lib"))
+                             ":"))
+
+              (define (patch-elf file)
+                (make-file-writable file)
+                (unless (string-contains file ".so")
+                  (format #t "Setting interpreter on '~a'...~%" file)
+                  (invoke "patchelf" "--set-interpreter" ld.so
+                          file))
+                (format #t "Setting RPATH on '~a'...~%" file)
+                (invoke "patchelf" "--set-rpath" rpath
+                        "--force-rpath" file))
+
+              (for-each (lambda (file)
+                          (when (elf-file? file)
+                            (patch-elf file)))
+                        (find-files "."
+                                    (lambda (file stat)
+                                      (eq? 'regular
+                                           (stat:type stat)))))))
+          (replace 'install
+            (lambda _
+              (let ((lib (string-append #$output "/lib"))
+                    (include (string-append #$output "/include")))
+                (mkdir-p #$output)
+                (copy-recursively "lib" lib)
+                (copy-recursively "include" include)))))))
+    (native-inputs
+     (list patchelf))
+    (inputs
+     `(("gcc:lib" ,gcc-8 "lib")))
+    (home-page "https://developer.nvidia.com/cuda-toolkit")
+    (synopsis
+     "NVIDIA CUDA Deep Neural Network library (cuDNN)")
+    (description
+     "This package provides the CUDA Deep Neural Network library.")
+    (license (nonfree:nonfree "https://docs.nvidia.com/deeplearning/cudnn/sla/index.html"))))
+
+(define-public cudnn-8.9.1.23
+  (let ((version "8.9.1.23"))
+    (make-cudnn version
+                (cudnn-source
+                 (string-append "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-"
+                                version "_cuda11-archive.tar.xz")
+                 "0p286gnjslz06z9vff136pq8srkax75nbklmvg4r11g2cxr8ind6"))))
