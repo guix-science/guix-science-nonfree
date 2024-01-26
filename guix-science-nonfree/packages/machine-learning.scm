@@ -25,6 +25,7 @@
   #:use-module (guix packages)
   #:use-module (gnu packages)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages elf)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages machine-learning)
   #:use-module (gnu packages python)
@@ -410,3 +411,41 @@
       (native-inputs
        (modify-inputs (package-native-inputs base)
          (append python-wrapper))))))
+
+(define-public python-jaxlib-with-cuda11
+  (package
+    (inherit python-jaxlib/wheel-with-cuda11)
+    (source #f)
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:tests? #false
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'unpack)
+          (replace 'build
+            (lambda* (#:key inputs #:allow-other-keys)
+              (mkdir-p "dist")
+              (let ((wheel (car (find-files (assoc-ref inputs "python-jaxlib-with-cuda11")
+                                            "jaxlib-.*\\.whl$"))))
+                (install-file wheel "dist"))))
+          ;; XXX: python-jaxlib/wheel-with-cuda11 builds libraries
+          ;; without RUNPATH.
+          (add-after 'install 'fix-rpath
+            (lambda* (#:key inputs #:allow-other-keys)
+              (let ((libdir (string-append #$output "/lib"))
+                    (rpath  (string-append #$output "/lib/python3.10/site-packages/jaxlib/mlir/_mlir_libs/:"
+                                           (string-join (map (lambda (label+dir)
+                                                               (string-append (cdr label+dir) "/lib"))
+                                                             inputs)
+                                                        ":"))))
+                (for-each
+                 (lambda (file)
+                   (invoke "patchelf" "--set-rpath" rpath file))
+                 (find-files libdir ".*\\.so$"))))))))
+    ;; XXX: for fix-rpath phase only
+    (inputs
+     `(("gcc:lib" ,gcc "lib")
+       ,@(package-inputs python-jaxlib/wheel-with-cuda11)))
+    (native-inputs
+     (list patchelf python-jaxlib/wheel-with-cuda11))))
