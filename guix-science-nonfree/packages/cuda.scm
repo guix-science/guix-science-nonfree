@@ -256,12 +256,14 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                 (copy-recursively "builds/cuda-toolkit/nvvm/libdevice/"
                                   (string-append #$output "/nvvm/libdevice"))))))))))
 
+(define-public cuda-11 cuda-11.8)
+
 (define-public cuda
   ;; Default version.
   ;;
   ;; Note: Pick a version that matches the actual "driver"--i.e.,
   ;; /usr/lib64/libcuda.so available on the target machine.
-  cuda-11.7)
+  cuda-11)
 
 (define-public no-float128
   ;; FIXME: We cannot simply add it to 'propagated-inputs' of cuda-toolkit
