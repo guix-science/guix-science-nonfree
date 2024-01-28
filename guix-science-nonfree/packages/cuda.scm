@@ -198,7 +198,9 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                   (copy-recursively "cuda_cupti/extras/CUPTI" #$output)
                   ;; 'cicc' needs that directory.
                   (copy-recursively "cuda_nvcc/nvvm/libdevice"
-                                    (string-append #$output "/nvvm/libdevice")))))
+                                    (string-append #$output "/nvvm/libdevice")))
+                ;; Delete stray symlink
+                (delete-file (string-append #$output "/include/include"))))
             ;; XXX: No documentation for now.
             (delete 'move-documentation)))))
     (native-inputs
