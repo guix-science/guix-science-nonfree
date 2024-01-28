@@ -218,6 +218,17 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
     (inputs
      `(("gcc:lib" ,gcc-11 "lib")))))
 
+(define-public cuda-11.8
+  (package
+    (inherit cuda-11.0)
+    (version "11.8.0")
+    (source
+     (cuda-source
+      "https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run"
+      "05jskb06lw0v1m52pg2zhm5v78837cb9pgcsxnxsgr7b7apw88wj"))
+    (inputs
+     `(("gcc:lib" ,gcc-11 "lib")))))
+
 (define-public cuda-10.2
   (package
     (inherit cuda-11.0)
