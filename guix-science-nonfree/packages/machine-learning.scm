@@ -449,3 +449,23 @@
        ,@(package-inputs python-jaxlib/wheel-with-cuda11)))
     (native-inputs
      (list patchelf python-jaxlib/wheel-with-cuda11))))
+
+(define-public python-jax-cuda-plugin-with-cuda11
+  (package
+    (inherit python-jaxlib/wheel-with-cuda11)
+    (name "python-jax-cuda-plugin-with-cuda11")
+    (source #f)
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:tests? #false
+      #:phases
+      #~(modify-phases %standard-phases
+          (delete 'unpack)
+          (replace 'build
+            (lambda* (#:key inputs #:allow-other-keys)
+              (mkdir-p "dist")
+              (let ((wheel (car (find-files (assoc-ref inputs "python-jaxlib-with-cuda11")
+                                            "jax_cuda_plugin.*\\.whl$"))))
+                (install-file wheel "dist")))))))
+    (native-inputs (list python-jaxlib/wheel-with-cuda11))))
