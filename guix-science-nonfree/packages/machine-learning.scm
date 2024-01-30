@@ -240,7 +240,6 @@
          ((#:bazel-arguments args)
           #~(append #$args
                     (list "--config=cuda"
-                          "--config=cuda_plugin"
                           (string-append "--action_env=CUDA_TOOLKIT_PATH="
                                          #$(this-package-input "cuda-toolkit"))
                           (string-append "--action_env=CUDNN_INSTALL_PATH="
@@ -269,8 +268,7 @@
                                 ;; package on unsupported platforms,
                                 ;; e.g. when running "guix package
                                 ;; --search="
-                                (_                "UNSUPPORTED")))
-             "--include_gpu_plugin_extension"))
+                                (_                "UNSUPPORTED")))))
          ((#:phases phases)
           (with-imported-modules (source-module-closure '((guix build utils)
                                                           (guix build union)
@@ -334,7 +332,6 @@
                         (display
                          (string-append
                           "build --config=cuda\n"
-                          "build --config=cuda_plugin\n"
                           "build:cuda --action_env TF_CUDA_COMPUTE_CAPABILITIES="
                           (getenv "TF_CUDA_COMPUTE_CAPABILITIES") "\n"
                           "build --action_env CUDA_TOOLKIT_PATH="
@@ -351,59 +348,7 @@
                           "build --action_env TF_CUDNN_VERSION="
                           #$(version-major
                              (package-version (this-package-input "cuda-toolkit-cudnn"))))
-                         port)))))
-                (add-after 'build 'build-gpu-plugin
-                  (lambda* (#:key parallel-build? bazel-arguments run-command #:allow-other-keys)
-                    (define %build-directory (getenv "NIX_BUILD_TOP"))
-                    (define %bazel-out
-                      (string-append %build-directory "/output"))
-                    (define %bazel-user-root
-                      (string-append %build-directory "/tmp"))
-                    (apply invoke "bazel"
-                           "--batch"
-                           (string-append "--output_base=" %bazel-out)
-                           (string-append "--output_user_root=" %bazel-user-root)
-                           "run"
-                           "--curses=no"
-                           "--verbose_failures"
-                           "--subcommands=pretty_print"
-                           "--action_env=PATH"
-                           "--action_env=LIBRARY_PATH"
-                           "--action_env=C_INCLUDE_PATH"
-                           "--action_env=CPLUS_INCLUDE_PATH"
-                           "--action_env=GUIX_LOCPATH"
-                           "--action_env=TF_SYSTEM_LIBS"
-                           "--host_action_env=TF_SYSTEM_LIBS"
-                           "--host_action_env=PATH"
-                           "--host_action_env=LIBRARY_PATH"
-                           "--host_action_env=C_INCLUDE_PATH"
-                           "--host_action_env=CPLUS_INCLUDE_PATH"
-                           "--host_action_env=GUIX_LOCPATH"
-                           (append
-                            bazel-arguments
-                            (list "--jobs"
-                                  (if parallel-build?
-                                      (number->string (parallel-job-count))
-                                      "1")
-                                  "//jaxlib/tools:build_gpu_plugin_wheel"
-                                  "--")
-                            (list
-                             (string-append "--output_path=" #$output)
-                             (string-append "--cpu="
-                                            #$(match (or (%current-target-system)
-                                                         (%current-system))
-                                                ("x86_64-linux"   "x86_64")
-                                                ("i686-linux"     "i686")
-                                                ("mips64el-linux" "mips64")
-                                                ("aarch64-linux"  "aarch64")
-                                                ;; Prevent errors when querying this
-                                                ;; package on unsupported platforms,
-                                                ;; e.g. when running "guix package
-                                                ;; --search="
-                                                (_                "UNSUPPORTED")))
-                             (string-append "--cuda_version="
-                                            #$(version-major+minor
-                                               (package-version (this-package-input "cuda-toolkit"))))))))))))))
+                         port))))))))))
       (inputs
        (modify-inputs (package-inputs base)
          (append cuda-11.8 cudnn-8.9.1.23)))
@@ -452,31 +397,10 @@
     (native-inputs
      (list patchelf python-jaxlib/wheel-with-cuda11))))
 
-(define-public python-jax-cuda-plugin-with-cuda11
-  (package
-    (inherit python-jaxlib/wheel-with-cuda11)
-    (name "python-jax-cuda-plugin-with-cuda11")
-    (source #f)
-    (build-system pyproject-build-system)
-    (arguments
-     (list
-      #:tests? #false
-      #:phases
-      #~(modify-phases %standard-phases
-          (delete 'unpack)
-          (replace 'build
-            (lambda* (#:key inputs #:allow-other-keys)
-              (mkdir-p "dist")
-              (let ((wheel (car (find-files (assoc-ref inputs "python-jaxlib-with-cuda11")
-                                            "jax_cuda_plugin.*\\.whl$"))))
-                (install-file wheel "dist")))))))
-    (native-inputs (list python-jaxlib/wheel-with-cuda11))))
-
 (define-public python-jax-with-cuda11
   (package
     (inherit python-jax)
     (name "python-jax-with-cuda11")
     (propagated-inputs
      (modify-inputs (package-propagated-inputs python-jax)
-       (append python-jax-cuda-plugin-with-cuda11)
        (replace "python-jaxlib" python-jaxlib-with-cuda11)))))
