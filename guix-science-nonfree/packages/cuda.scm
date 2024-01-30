@@ -194,12 +194,14 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                             (scandir "." (match-lambda
                                            ((or "." "..") #f)
                                            (_ #t))))
-
-                  (copy-recursively "cuda_cupti/extras/CUPTI" #$output)
                   ;; 'cicc' needs that directory.
                   (copy-recursively "cuda_nvcc/nvvm/libdevice"
-                                    (string-append #$output "/nvvm/libdevice")))
-                ;; Delete stray symlink
+                                    (string-append #$output "/nvvm/libdevice")))))
+            (add-after 'install 'install-cupti
+              (lambda _
+                (copy-recursively "builds/cuda_cupti/extras/CUPTI" #$output)))
+            (add-after 'install 'delete-stray-symlinks
+              (lambda _
                 (delete-file (string-append #$output "/include/include"))))
             ;; XXX: No documentation for now.
             (delete 'move-documentation)))))
@@ -243,6 +245,8 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
         #~(modify-phases #$phases
             ;; This phase doesn't work as is for 10.2.
             (delete 'remove-superfluous-stuff)
+            (delete 'install-cupti)
+            (delete 'delete-stray-symlinks)
             (add-after 'unpack 'fix-isinf
               (lambda _
                 (substitute* "builds/cuda-toolkit/include/cuda_fp16.hpp"
