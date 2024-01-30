@@ -441,7 +441,9 @@
                                                         ":"))))
                 (for-each
                  (lambda (file)
-                   (invoke "patchelf" "--set-rpath" rpath file))
+                   (invoke "patchelf" "--set-rpath" rpath file)
+                   ;; .so files should be executable
+                   (chmod file #o555))
                  (find-files libdir ".*\\.so$"))))))))
     ;; XXX: for fix-rpath phase only
     (inputs
