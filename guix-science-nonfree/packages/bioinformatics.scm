@@ -798,6 +798,36 @@ with loompy.")
       ;; should consider it licensed under the non-free DBAD license.
       (license (nonfree "https://dbad-license.org")))))
 
+(define-public r-louper
+  (let ((commit "4fe1246fe26b1bc9618ef88d4b6aaa19e3fabd6e")
+        (revision "1"))
+    (package
+      (name "r-louper")
+      (version (git-version "1.0.1" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/10XGenomics/loupeR")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32 "17v741q6pgi7qqg4f84jiw46cglgzjfzcw98fyvgb47bkxghz5zg"))))
+      (properties
+       `((upstream-name . "loupeR")
+         ;; See license
+         (substitutable? . #false)))
+      (build-system r-build-system)
+      (propagated-inputs (list r-hdf5r r-seurat))
+      (home-page "https://github.com/10XGenomics/loupeR")
+      (synopsis "Convert Seurat objects to 10x Genomics Loupe files")
+      (description
+       "This package converts Seurat objects to 10x Genomics Loupe
+files.")
+      ;; You agree not to redistribute or sublicense the Software,
+      ;; either in source code or object code format.
+      (license (nonfree "file://LICENSE")))))
+
 (define-public r-omixerrpm
   (let ((commit "184f1cc99aefed722e20eb00eda082348a064c4e")
         (revision "1"))
