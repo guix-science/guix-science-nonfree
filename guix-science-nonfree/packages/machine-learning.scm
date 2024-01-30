@@ -253,7 +253,7 @@
                                          #$(version-major+minor
                                             (package-version (this-package-input "cuda-toolkit"))))
                           (string-append "--action_env=TF_CUDNN_VERSION="
-                                         #$(version-major+minor
+                                         #$(version-major
                                             (package-version (this-package-input "cuda-toolkit-cudnn")))))))
          ((#:run-command cmd)
           #~(list
@@ -349,7 +349,7 @@
                           #$(version-major+minor
                              (package-version (this-package-input "cuda-toolkit"))) "\n"
                           "build --action_env TF_CUDNN_VERSION="
-                          #$(version-major+minor
+                          #$(version-major
                              (package-version (this-package-input "cuda-toolkit-cudnn"))))
                          port)))))
                 (add-after 'build 'build-gpu-plugin
