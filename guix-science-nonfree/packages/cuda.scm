@@ -260,14 +260,27 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                 (copy-recursively "builds/cuda-toolkit/nvvm/libdevice/"
                                   (string-append #$output "/nvvm/libdevice"))))))))))
 
+(define-public cuda-12.3
+  (package
+    (inherit cuda-11.0)
+    (version "12.3.2")
+    (source
+     (cuda-source
+      "https://developer.download.nvidia.com/compute/cuda/12.3.2/local_installers/cuda_12.3.2_545.23.08_linux.run"
+      "0nx67d4ls2nfwcfdmg81vf240z6lpwpdqypssr1wzn3hyz4szci4"))
+   (inputs
+     `(("gcc:lib" ,gcc-13 "lib")))))
+
 (define-public cuda-11 cuda-11.8)
+
+(define-public cuda-12 cuda-12.3)
 
 (define-public cuda
   ;; Default version.
   ;;
   ;; Note: Pick a version that matches the actual "driver"--i.e.,
   ;; /usr/lib64/libcuda.so available on the target machine.
-  cuda-11)
+  cuda-12.3)
 
 (define-public no-float128
   ;; FIXME: We cannot simply add it to 'propagated-inputs' of cuda-toolkit
