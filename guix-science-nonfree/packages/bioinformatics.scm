@@ -799,11 +799,11 @@ with loompy.")
       (license (nonfree "https://dbad-license.org")))))
 
 (define-public r-louper
-  (let ((commit "4fe1246fe26b1bc9618ef88d4b6aaa19e3fabd6e")
+  (let ((commit "526ebdf92315b419301356b61f427da61c7a1ed8")
         (revision "1"))
     (package
       (name "r-louper")
-      (version (git-version "1.0.1" revision commit))
+      (version (git-version "1.0.2" revision commit))
       (source
        (origin
          (method git-fetch)
@@ -812,7 +812,7 @@ with loompy.")
                (commit commit)))
          (file-name (git-file-name name version))
          (sha256
-          (base32 "17v741q6pgi7qqg4f84jiw46cglgzjfzcw98fyvgb47bkxghz5zg"))))
+          (base32 "1dr92bd7hwvl8nk6xjxfxmgv1gfca07kmway2p8iw0707l0qvgmw"))))
       (properties
        `((upstream-name . "loupeR")
          ;; See license
