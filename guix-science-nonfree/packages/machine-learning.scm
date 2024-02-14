@@ -537,3 +537,85 @@ Cflags: -I~a/include/tensorflow
       (native-inputs
        (modify-inputs (package-native-inputs base)
          (append python-wrapper))))))
+
+(define-public python-tensorflow-with-cuda11
+  (package
+    (inherit tensorflow-with-cuda11)
+    (name "python-tensorflow-with-cuda11")
+    (source #f)
+    (build-system pyproject-build-system)
+    (arguments
+     (list
+      #:tests? #false
+      #:phases
+      #~(modify-phases %standard-phases
+          (replace 'unpack
+            (lambda _
+              (mkdir-p "source")
+              (copy-recursively #$tensorflow-with-cuda11:python "source")
+              (chdir "source")
+              ;; XXX: the "python" output of the tensorflow package
+              ;; contains broken symlinks.
+              (delete-file-recursively "third_party/eigen3")
+              (mkdir-p "third_party/eigen3")
+              (copy-recursively #$eigen-for-python-ml-dtypes
+                                "third_party/eigen3")
+              (with-output-to-file "third_party/eigen3/LICENSE"
+                (lambda () (display "")))))
+          (add-after 'unpack 'relax-dependencies
+            (lambda _
+              (substitute* "setup.py"
+                ;; We don't have tensorflow-io yet
+                (("'tensorflow-io-gcs-filesystem.*") "None,")
+                (("'platform_system.*") "")
+                ;; Versions above 0.4 break tests, but that's okay
+                ;; because we aren't running them.
+                (("gast >= 0.2.1, <= 0.4.0") "gast >= 0.2.1")
+                ;; Drop all of tensorboard and tensorflow_estimator
+                (("'(tensorboard|tensorflow_estimator) >.*',") " None,")
+                ;; Our clang bindings have a different name.
+                (("libclang") "clang")
+                ;; No tensorboard, sorry.
+                (("standard_or_nightly\\('tensorboard = tensorboard.main:run_main', None\\),") "")
+                (("'import_pb_to_tensorboard = tensorflow.python.tools.import_pb_to_tensorboard:main',") "")
+                ;; We don't have tensorflow-estimator yet.
+                (("'estimator_ckpt_converter = '") "")
+                (("'tensorflow_estimator.python.estimator.tools.checkpoint_converter:main',") ""))))
+          ;; XXX: this is really ugly, but many shared objects cannot
+          ;; find libtensorflow_framework.so.2 and libbfloat16.so.so
+          (add-after 'unpack 'find-tensorflow-libraries
+            (lambda _
+              ;; XXX: not all .so files need this.
+              (let ((libraries (find-files "." ".*\\.so$")))
+                (for-each (lambda (lib)
+                            (make-file-writable lib)
+                            (system (format #false
+                                            "patchelf --set-rpath ~a:~a:$(patchelf --print-rpath ~a) ~a"
+                                            ;; for libtensorflow_framework.so.2
+                                            (string-append
+                                             #$(this-package-input "tensorflow-with-cuda11")
+                                             "/lib")
+                                            ;; for libbfloat16.so.so
+                                            (string-append
+                                             #$output
+                                             "/lib/python3.10/site-packages/tensorflow/tsl/python/lib/core/")
+                                            lib lib)))
+                          libraries))))
+          (add-after 'install 'install-missing-libraries
+            (lambda _
+              ;; libtensorflow_cc.so.2 is not installed.  See
+              ;; https://github.com/tensorflow/tensorflow/issues/60326.
+              (let ((dir (string-append #$output "/lib/python3.10/site-packages/tensorflow/"))
+                    (lib (string-append "libtensorflow_cc.so." #$(package-version this-package))))
+                (install-file (string-append "tensorflow/" lib) dir)
+                (with-directory-excursion dir
+                  (symlink lib "libtensorflow_cc.so.2"))))))))
+    (outputs '("out"))
+    (propagated-inputs
+     (modify-inputs (package-propagated-inputs tensorflow-with-cuda11)
+       (append python-clang-13 python-keras-for-tensorflow)))
+    (inputs (list tensorflow-with-cuda11))
+    (native-inputs
+     (list eigen-for-python-ml-dtypes
+           patchelf
+           `(,tensorflow-with-cuda11 "python")))))
