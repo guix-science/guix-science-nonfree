@@ -668,7 +668,29 @@ datasets (MEME-ChIP).")
               (chdir "../rMATS_pipeline")
               (invoke "python" "setup.py" "build_ext")))
           (add-after 'build-pipeline 'install-pipeline
-            (assoc-ref python:%standard-phases 'install)))))
+            (lambda _
+              (let ((share (string-append #$output "/share/rmats-turbo/")))
+                (for-each (lambda (file)
+                            (install-file file share))
+                          (find-files "build" "\\.so$")))))
+          (add-after 'install-pipeline 'install-files
+            (lambda* (#:key inputs #:allow-other-keys)
+              (chdir "..")
+              (let ((share (string-append #$output "/share/rmats-turbo/")))
+                (mkdir-p share)
+                (for-each (lambda (file) (install-file file share))
+                          (list "rmats.py" "cp_with_prefix.py"))
+                (for-each (lambda (directory) (copy-recursively directory share))
+                          (list "rMATS_R" "rMATS_P"))
+                (let ((executable (string-append #$output "/bin/run_rmats")))
+                  (with-output-to-file executable
+                    (lambda ()
+                      (display (string-append "\
+#!/bin/sh
+" (search-input-file inputs "/bin/python3") " " (string-append share "rmats.py") " $@"))))
+                  (chmod executable #o555))))))))
+    (propagated-inputs
+     (list r-pairadise))
     (inputs
      (list bamtools
            gsl
