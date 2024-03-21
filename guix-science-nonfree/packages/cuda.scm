@@ -427,19 +427,19 @@ See also
                  "0p286gnjslz06z9vff136pq8srkax75nbklmvg4r11g2cxr8ind6"))))
 
 (define-public cutensor
-	(package
-	 (name "cutensor")
-	 (version "2.0.1.2")
-	 (home-page "https://developer.nvidia.com/cutensor")
-	 (source (origin
-						(method url-fetch)
-						(uri (string-append "https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-" version "-archive.tar.xz"))
-						(sha256 (base32 "18l6qmfjcn75jsyzlsj66mji8lgab2ih19d0drqavfi2lqna3vgd"))))
-	 (build-system copy-build-system)
-	 (arguments (list #:substitutable? #f
-										#:strip-binaries? #f
-										#:validate-runpath? #f
-										#:install-plan #~'(("include" "include") ("lib" "lib") ("LICENSE" "LICENSE"))))
-	 (synopsis "Nvidia cuTENSOR library")
-	 (description "This package provides the proprietary cuTENSOR library for NVIDIA GPUs")
-	 (license (nonfree:nonfree "https://docs.nvidia.com/cuda/cutensor/latest/license.html"))))
+  (package
+   (name "cutensor")
+   (version "2.0.1.2")
+   (home-page "https://developer.nvidia.com/cutensor")
+   (source (origin
+            (method url-fetch)
+            (uri (string-append "https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-" version "-archive.tar.xz"))
+            (sha256 (base32 "18l6qmfjcn75jsyzlsj66mji8lgab2ih19d0drqavfi2lqna3vgd"))))
+   (build-system copy-build-system)
+   (arguments (list #:substitutable? #f
+                    #:strip-binaries? #f
+                    #:validate-runpath? #f
+                    #:install-plan #~'(("include" "include") ("lib" "lib") ("LICENSE" "LICENSE"))))
+   (synopsis "Nvidia cuTENSOR library")
+   (description "This package provides the proprietary cuTENSOR library for NVIDIA GPUs")
+   (license (nonfree:nonfree "https://docs.nvidia.com/cuda/cutensor/latest/license.html"))))
