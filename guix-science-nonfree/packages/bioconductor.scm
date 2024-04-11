@@ -35,18 +35,18 @@
 (define-public r-dorothea
   (package
     (name "r-dorothea")
-    (version "1.14.0")
+    (version "1.14.1")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "dorothea" version
                                      'experiment))
               (sha256
                (base32
-                "1vinixcpl4hjjfw48qfngsvw1yr82yscdxrsgagdm8gm7b72qjgh"))))
+                "0bjmnqly57y69axnz5q2rqz7j7dnz1xzbhbzcalv99kybjiyqyb5"))))
     (properties `((upstream-name . "dorothea")))
     (build-system r-build-system)
     (propagated-inputs
-     (list r-bcellviper r-decoupler r-dplyr r-magrittr r-viper))
+     (list r-bcellviper r-decoupler r-dplyr r-magrittr))
     (native-inputs (list r-knitr))
     (home-page "https://saezlab.github.io/dorothea/")
     (synopsis "Collection of human and mouse TF regulons")
