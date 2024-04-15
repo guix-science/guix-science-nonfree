@@ -35,18 +35,18 @@
 (define-public r-dorothea
   (package
     (name "r-dorothea")
-    (version "1.14.0")
+    (version "1.14.1")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "dorothea" version
                                      'experiment))
               (sha256
                (base32
-                "1vinixcpl4hjjfw48qfngsvw1yr82yscdxrsgagdm8gm7b72qjgh"))))
+                "0bjmnqly57y69axnz5q2rqz7j7dnz1xzbhbzcalv99kybjiyqyb5"))))
     (properties `((upstream-name . "dorothea")))
     (build-system r-build-system)
     (propagated-inputs
-     (list r-bcellviper r-decoupler r-dplyr r-magrittr r-viper))
+     (list r-bcellviper r-decoupler r-dplyr r-magrittr))
     (native-inputs (list r-knitr))
     (home-page "https://saezlab.github.io/dorothea/")
     (synopsis "Collection of human and mouse TF regulons")
@@ -118,13 +118,13 @@ the identification.")
 (define-public r-spia
   (package
     (name "r-spia")
-    (version "2.52.0")
+    (version "2.54.0")
     (source (origin
               (method url-fetch)
               (uri (bioconductor-uri "SPIA" version))
               (sha256
                (base32
-                "1f0d12y9al89c669y5c7byjgyml33jnn6s9iq1gcxm73ac6ws067"))))
+                "091plgvpsmv4x6h19awqkiqdkxjdn9jm5mh52y7m77qgybnjpsm5"))))
     (properties `((upstream-name . "SPIA")))
     (build-system r-build-system)
     (propagated-inputs (list r-kegggraph))

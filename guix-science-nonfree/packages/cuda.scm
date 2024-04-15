@@ -410,6 +410,14 @@ See also
      "This package provides the CUDA Deep Neural Network library.")
     (license (nonfree:nonfree "https://docs.nvidia.com/deeplearning/cudnn/sla/index.html"))))
 
+(define-public cudnn-8.6
+  (let ((version "8.6.0.163"))
+    (make-cudnn version
+                (cudnn-source
+                 (string-append "https://developer.download.nvidia.com/compute/cudnn/redist/cudnn/linux-x86_64/cudnn-linux-x86_64-"
+                                version "_cuda11-archive.tar.xz")
+                 "17hm24bw4q3haksdr0hbr2zv33309mkh1ih9viz6ak198zgrdhxv"))))
+
 (define-public cudnn-8.9.1.23
   (let ((version "8.9.1.23"))
     (make-cudnn version
