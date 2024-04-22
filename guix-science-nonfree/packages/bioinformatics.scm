@@ -624,7 +624,7 @@ datasets (MEME-ChIP).")
 (define-public rmats-turbo
   (package
     (name "rmats-turbo")
-    (version "4.1.2")
+    (version "4.3.0")
     (source (origin
               (method git-fetch)
               (uri (git-reference
@@ -633,7 +633,7 @@ datasets (MEME-ChIP).")
               (file-name (git-file-name name version))
               (sha256
                (base32
-                "02ygjng1rc3k4daw3hrg102797dlvkcisnmwlhn1qbk0m3lg8dcb"))))
+                "07nvs3il4sk8pfzyj9bl3qxn2yhwinxw2dkl6khng1s7qm6xnmrf"))))
     (build-system gnu-build-system)
     (arguments
      (list
