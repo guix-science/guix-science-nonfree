@@ -19,6 +19,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix-science-nonfree licenses)
   #:use-module (guix-science-nonfree packages cuda)
+  #:use-module (guix-science-nonfree packages mkl)
   #:use-module (gnu packages)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages algebra)
@@ -52,6 +53,7 @@
   #:use-module (gnu packages python-web)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages serialization)
+  #:use-module (gnu packages sqlite)
   #:use-module (gnu packages statistics)
   #:use-module (gnu packages swig)
   #:use-module (gnu packages web)
@@ -410,6 +412,64 @@ tool."))))
 factor binding sites among upstream sequences from co-regulated
 genes.")
     (license (nonfree "Academic use only."))))
+
+;; This is free software but requires linking with Intel's proprietary
+;; MKL.  See https://github.com/jianyangqt/gcta/issues/77.
+(define-public gcta
+  (package
+    (name "gcta")
+    (version "1.94.1")
+    (source (origin
+              (method git-fetch)
+              (uri (git-reference
+                    (url "https://github.com/jianyangqt/gcta")
+                    (commit (string-append "v" version))
+                    (recursive? #true)))
+              (file-name (git-file-name name version))
+              (sha256
+               (base32
+                "1yb5qvfi73za02gbyiand3byimx7lyc2sgv5msxbq3s3wf3bn36d"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list
+      ;; Tests have been disabled upstream:
+      ;; https://github.com/jianyangqt/gcta/blob/v1.94.1/CMakeLists.txt#L197
+      #:tests? #false
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-after 'unpack 'find-libraries
+            (lambda _
+              (setenv "EIGEN3_INCLUDE_DIR"
+                      (string-append #$(this-package-input "eigen")
+                                     "/include/eigen3"))
+              (setenv "SPECTRA_LIB"
+                      (string-append #$(this-package-input "spectra")
+                                     "/lib"))
+              (setenv "BOOST_LIB"
+                      (string-append #$(this-package-input "boost")
+                                     "/lib"))
+              (setenv "MKLROOT" #$(this-package-input "mkl"))))
+          (replace 'install
+            (lambda _
+              (install-file "gcta64"
+                            (string-append #$output "/bin")))))))
+    (inputs
+     (list boost eigen gsl mkl-2020
+           openblas spectra sqlite zlib `(,zstd "lib")))
+    (native-inputs
+     (list pkg-config))
+    ;; Only x86_64 is supported at the moment although aarch64 is
+    ;; checked for in the build system.
+    (supported-systems '("x86_64-linux"))
+    (home-page "https://yanglab.westlake.edu.cn/software/gcta/")
+    (synopsis "Tool for Genome-wide Complex Trait Analysis")
+    (description
+     "GCTA (Genome-wide Complex Trait Analysis) is a software package,
+which was initially developed to estimate the proportion of phenotypic
+variance explained by all genome-wide SNPs for a complex trait but has
+been extensively extended for many other analyses of data from
+genome-wide association studies (GWASs).")
+    (license license:gpl3)))
 
 (define-public macs-1
   (package (inherit macs)
