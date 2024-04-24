@@ -740,7 +740,9 @@ datasets (MEME-ChIP).")
                 (mkdir-p share)
                 (for-each (lambda (file) (install-file file share))
                           (list "rmats.py" "cp_with_prefix.py"))
-                (for-each (lambda (directory) (copy-recursively directory share))
+                (for-each (lambda (directory)
+                            (copy-recursively directory
+                                              (string-append share "/" directory)))
                           (list "rMATS_R" "rMATS_P"))
                 (let ((executable (string-append #$output "/bin/run_rmats")))
                   (with-output-to-file executable
