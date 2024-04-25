@@ -743,7 +743,7 @@ datasets (MEME-ChIP).")
                 (for-each (lambda (directory)
                             (copy-recursively directory
                                               (string-append share "/" directory)))
-                          (list "rMATS_R" "rMATS_P"))
+                          (list "rMATS_R" "rMATS_P" "rMATSexe"))
                 (let ((executable (string-append #$output "/bin/run_rmats")))
                   (with-output-to-file executable
                     (lambda ()
