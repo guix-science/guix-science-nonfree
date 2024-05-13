@@ -718,7 +718,11 @@ datasets (MEME-ChIP).")
                                      "/include/bamtools:"
                                      (or (getenv "CPLUS_INCLUDE_PATH") "")))
               (substitute* "rMATS_pipeline/setup.py"
-                (("'-Wl,-static',") ""))))
+                (("'-Wl,-static',") ""))
+              (substitute* "rmats.py"
+                (("rmats_c = os.path.join.*")
+                 (string-append "rmats_c = \""
+                                #$output "/bin/rMATSexe\"\n")))))
           (add-before 'build 'chdir
             (lambda _ (chdir "rMATS_C")))
           (add-before 'install 'prepare-install
