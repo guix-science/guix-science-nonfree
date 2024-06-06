@@ -272,7 +272,7 @@ any other language that can reference a C interface.")
                          (base32
                           "159sh6jq1q9mw6k950p1qrxnvppvmk6gcm9b0m6xd0pfpbmqp6ka")))
 
-(define-public intel-oneapi-mkl+meta
+(define-public intel-oneapi-mkl
   (package
     (inherit mkl-2020)
     (name "intel-oneapi-mkl")                     ;meta-package
