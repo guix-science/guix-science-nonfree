@@ -167,15 +167,15 @@
                        "python-six" "tbb" "XNNPACK" "zstd"))))))
     (arguments
      (substitute-keyword-arguments (package-arguments python-pytorch)
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           ;; XXX: libcuda.so.1 is not on the RUNPATH.
-           (delete 'validate-runpath)
-           (add-after 'unpack 'do-not-build-tests
-             (lambda _
-               (setenv "INSTALL_TEST" "OFF")
-               (setenv "BUILD_TESTS" "OFF")
-               (setenv "BUILD_TEST" "OFF")))))))
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            ;; XXX: libcuda.so.1 is not on the RUNPATH.
+            (delete 'validate-runpath)
+            (add-after 'unpack 'do-not-build-tests
+              (lambda _
+                (setenv "INSTALL_TEST" "OFF")
+                (setenv "BUILD_TESTS" "OFF")
+                (setenv "BUILD_TEST" "OFF")))))))
     (inputs
      (modify-inputs (package-inputs python-pytorch)
        (append cuda)
@@ -197,16 +197,17 @@
     (inherit python-pytorch)
     (name "python-pytorch-with-cuda11")
     (arguments
-     (substitute-keyword-arguments (package-arguments python-pytorch-with-cuda10)
-       ((#:phases phases '%standard-phases)
-        `(modify-phases ,phases
-           ;; XXX: Building with the bundled NCCL <https://github.com/nvidia/nccl>
-           ;; fails with "undefined reference" errors.
-           (add-after 'unpack 'disable-nccl
-             (lambda _
-               (substitute* "CMakeLists.txt"
-                 (("USE_NCCL \"Use NCCL\" ON")
-                  "USE_NCCL \"Use NCCL\" OFF"))))))))
+     (substitute-keyword-arguments (package-arguments
+                                    python-pytorch-with-cuda10)
+       ((#:phases phases #~%standard-phases)
+        #~(modify-phases #$phases
+            ;; XXX: Building with the bundled NCCL <https://github.com/nvidia/nccl>
+            ;; fails with "undefined reference" errors.
+            (add-after 'unpack 'disable-nccl
+              (lambda _
+                (substitute* "CMakeLists.txt"
+                  (("USE_NCCL \"Use NCCL\" ON")
+                   "USE_NCCL \"Use NCCL\" OFF"))))))))
     (inputs
      (modify-inputs (package-inputs python-pytorch)
        (append cuda-11.7)
