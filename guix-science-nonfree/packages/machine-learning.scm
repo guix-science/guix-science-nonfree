@@ -136,6 +136,20 @@
       (native-inputs
        (package-native-inputs gloo)))))
 
+(define (tensorpipe-with-cuda cuda)
+  (package
+    (inherit tensorpipe)
+    (name (string-append "tensorpipe-with-cuda"
+                         (version-major (package-version cuda))))
+    (arguments (substitute-keyword-arguments (package-arguments tensorpipe)
+                 ((#:configure-flags flags #~'())
+                  #~(cons "-DTP_USE_CUDA=ON" #$flags))))
+    (inputs (modify-inputs (package-inputs tensorpipe)
+              (append cuda)))))
+
+(define-public tensorpipe-with-cuda10 (tensorpipe-with-cuda cuda-10.2))
+(define-public tensorpipe-with-cuda11 (tensorpipe-with-cuda cuda-11.7))
+
 (define-public python-pytorch-with-cuda10
   (package
     (inherit python-pytorch)
