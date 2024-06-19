@@ -1,4 +1,4 @@
-;;; Copyright © 2018, 2019, 2020 Inria
+;;; Copyright © 2018, 2019, 2020, 2024 Inria
 ;;; Copyright © 2021-2024 Ricardo Wurmus <ricardo.wurmus@mdc-berlin.de>
 ;;; Copyright © 2024 Atte Torri <atte.torri@protonmail.com>
 ;;;
@@ -18,6 +18,8 @@
 (define-module (guix-science-nonfree packages cuda)
   #:use-module (guix)
   #:use-module (guix gexp)
+  #:use-module (guix git-download)
+  #:use-module (guix build-system cmake)
   #:use-module (guix build-system copy)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system trivial)
@@ -25,6 +27,7 @@
   #:use-module ((guix-science-nonfree licenses) #:prefix nonfree:)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bootstrap)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages elf)
   #:use-module (gnu packages gcc)
   #:use-module (gnu packages perl)
@@ -453,3 +456,49 @@ compute/cutensor/redist/libcutensor/linux-x86_64/libcutensor-linux-x86_64-"
 library for NVIDIA GPUs.")
     (license
      (nonfree:nonfree "https://docs.nvidia.com/cuda/cutensor/latest/license.html"))))
+
+(define-public cutlass-with-cuda11
+  (package
+    (name "cutlass")
+    (version "3.5.0")
+    (home-page "https://github.com/NVIDIA/cutlass")
+    (source (origin
+              (method git-fetch)
+              (file-name (git-file-name name version))
+              (uri (git-reference (url home-page)
+                                  (commit (string-append "v" version))))
+              (sha256
+               (base32
+                "1vp1n2y0llyzypd6a6iasr0i6mww4r7b9xqygzk5zrhsidwkpyqg"))))
+    (build-system cmake-build-system)
+    (arguments
+     (list #:configure-flags
+           #~(list (string-append "-DGOOGLETEST_DIR="
+                                  #$(package-source googletest))
+
+                   ;; Disable these things: they require -lcuda at link time.
+                   "-DCUTLASS_ENABLE_EXAMPLES=NO"
+                   "-DCUTLASS_ENABLE_TESTS=NO"
+                   "-DCUTLASS_INSTALL_TESTS=NO")
+
+           ;; Everything depends on libcuda.so.1, which is nowhere to be
+           ;; found (it's provided as part of the kernel module package).
+           #:validate-runpath? #f))
+    (native-inputs (list python))
+    (inputs (list cuda-11.8))
+    (synopsis
+     "CUDA C++ template abstractions for high-performance linear algebra")
+    (description
+     "CUTLASS is a collection of CUDA C++ template abstractions for implementing
+high-performance matrix-matrix multiplication (GEMM) and related computations
+at all levels and scales within CUDA.  It incorporates strategies for
+hierarchical decomposition and data movement similar to those used to
+implement cuBLAS and cuDNN.
+
+CUTLASS decomposes these ``moving parts'' into reusable, modular software
+components abstracted by C++ template classes.  Primitives for different
+levels of a conceptual parallelization hierarchy can be specialized and tuned
+via custom tiling sizes, data types, and other algorithmic policy.  The
+resulting flexibility simplifies their use as building blocks within custom
+kernels and applications.")
+    (license license:bsd-3)))                     ;free!
