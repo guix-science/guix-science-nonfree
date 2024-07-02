@@ -88,6 +88,10 @@ a set of packages independent of any external package.")
   (geant4-dataset "G4NDL" "4.7"
                   "0283cwylajyjm4267ngfc2bd3452623r5bakywaccb8h44k3szby"))
 
+(define g4ndl-4.7.1
+  (geant4-dataset "G4NDL" "4.7.1"
+                  "0z3clj2i9pr42y7jipd91nzic97v6gam8jp2kmbx4611c94axb6k"))
+
 ;; G4EMLOW
 ;;
 (define g4emlow-8.2
@@ -275,7 +279,7 @@ This package supports visualization with OpenGL and Qt.")))
 (define-public geant4-11-2
   (package
     (inherit geant4-11-1)
-    (version "11.2.1")
+    (version "11.2.2")
     (source
      (origin
        (inherit (package-source geant4-11-1))
@@ -283,10 +287,11 @@ This package supports visualization with OpenGL and Qt.")))
              (url "https://gitlab.cern.ch/geant4/geant4")
              (commit (string-append "v" version))))
        (sha256
-        (base32 "1pdg5pf5izd2i05w34jclg0h4hrn3s4mjnr2dvq24lspjisc9r81"))))
+        (base32 "111v65zx09fyddnqv1d0b9x15wqhyl0548ny2ysv4x66wyrp8p9r"))))
     (inputs (modify-inputs (package-inputs geant4-11-1)
               (replace "clhep" clhep-2.4.7.1)))
     (native-inputs (modify-inputs (package-native-inputs geant4-11-1)
+                     (replace "G4NDL" g4ndl-4.7.1)
                      (replace "G4EMLOW" g4emlow-8.5)
                      (replace "G4ABLA" g4abla-3.3)
                      (replace "G4INCL" g4incl-1.2)))))
