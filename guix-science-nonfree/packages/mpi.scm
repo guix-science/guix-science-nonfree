@@ -1,5 +1,5 @@
 ;;; GNU Guix --- Functional package management for GNU
-;;; Copyright © 2023 Ludovic Courtès <ludovic.courtes@inria.fr>
+;;; Copyright © 2023-2024 Ludovic Courtès <ludovic.courtes@inria.fr>
 ;;;
 ;;; This file is NOT part of GNU Guix, but is supposed to be used with GNU
 ;;; Guix and thus has the same license.
@@ -34,8 +34,13 @@
        ((#:configure-flags flags #~'())
         #~(append (list (string-append "--with-cuda="
                                        #$(this-package-input "cuda-toolkit"))
-                        "--enable-mpi-ext=cuda")
-                  #$flags))))
+                        "--enable-mpi-ext=cuda,affinity")
+
+                  ;; '--enable-mpi-ext=' must be followed by a
+                  ;; comma-separated list.
+                  (filter (lambda (flag)
+                            (not (string-prefix? "--enable-mpi-ext=" flag)))
+                          #$flags)))))
     (inputs (modify-inputs (package-inputs openmpi)
               (append cuda)
               (replace "psm2" psm2-cuda)))
