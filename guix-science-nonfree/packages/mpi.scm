@@ -21,6 +21,7 @@
   #:use-module (guix)
   #:use-module (gnu packages mpi)
   #:use-module (guix-science-nonfree packages cuda)
+  #:use-module (guix-science-nonfree packages fabric-management)
   #:use-module (guix-science-nonfree packages linux))
 
 (define-public openmpi-cuda
@@ -28,8 +29,6 @@
     (inherit openmpi)
     (name "openmpi-cuda")
     (arguments
-     ;; TODO: Check whether UCX is built with gdrcopy:
-     ;; <https://www.open-mpi.org/faq/?category=buildcuda>.
      (substitute-keyword-arguments (package-arguments openmpi)
        ((#:configure-flags flags #~'())
         #~(append (list (string-append "--with-cuda="
@@ -43,5 +42,8 @@
                           #$flags)))))
     (inputs (modify-inputs (package-inputs openmpi)
               (append cuda)
-              (replace "psm2" psm2-cuda)))
+              ;; Use UCX with CUDA support.
+              (replace "ucx" ucx-cuda)
+              (replace "psm2" psm2-cuda)
+              (replace "libfabric" libfabric-cuda)))
     (synopsis "MPI-3 implementation, with CUDA support")))
