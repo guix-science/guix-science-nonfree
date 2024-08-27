@@ -26,6 +26,7 @@
   #:use-module (guix git-download)
   #:use-module (guix utils)
   #:use-module (guix build-system gnu)
+  #:use-module (gnu packages fabric-management)
   #:use-module (guix-science-nonfree packages cuda))
 
 (define-public gdrcopy
@@ -79,3 +80,39 @@
 RDMA technology that allows the CPU to directly map and access GPU
 memory.")
     (license expat)))
+
+(define-public ucx-cuda
+  (package/inherit ucx
+    (name (string-append (package-name ucx) "-cuda"))
+    (arguments
+     (substitute-keyword-arguments (package-arguments ucx)
+       ((#:configure-flags flags)
+        #~(append (list (string-append "--with-cuda="
+                                       #$(this-package-input "cuda-toolkit"))
+                        (string-append "--with-gdrcopy="
+                                       #$(this-package-input "gdrcopy")))
+                  #$flags))
+       ((#:phases phases '%standard-phases)
+        #~(modify-phases #$phases
+            ;; stubs subfolder is in lib, not in lib64.
+            (add-before 'bootstrap 'fix-stubs-path
+              (lambda _
+                (substitute* "config/m4/cuda.m4"
+                  (("libsuff=\\\"64\\\"")
+                   "libsuff=\"\""))))))
+       ((#:validate-runpath? #f #f)
+        #f)))
+    (inputs (modify-inputs (package-inputs ucx)
+              (append cuda)
+              (append gdrcopy)))
+    (synopsis "Optimized communication layer for message passing in HPC with GPU
+support")
+    (description
+     "Unified Communication X (UCX) provides an optimized communication layer
+for message passing (MPI), portable global address space (PGAS) languages and
+run-time support libraries, as well as RPC and data-centric applications.
+
+UCX utilizes high-speed networks for inter-node communication, and shared
+memory mechanisms for efficient intra-node communication.
+
+This package adds CUDA support for NVIDIA GPUs.")))
