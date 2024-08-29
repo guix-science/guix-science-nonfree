@@ -511,3 +511,46 @@ via custom tiling sizes, data types, and other algorithmic policy.  The
 resulting flexibility simplifies their use as building blocks within custom
 kernels and applications.")
     (license license:bsd-3)))                     ;free!
+
+(define-public nccl
+  (package
+    (name "nccl")
+    (version "2.22.3-1")
+    (source (origin
+              (method git-fetch)
+              (file-name (git-file-name name version))
+              (uri (git-reference (url "https://github.com/NVIDIA/nccl")
+                                  (commit (string-append "v" version))))
+              (sha256
+               (base32
+                "1kwh4950q953c2sr7ir2inyw34mwh5av7cq93j852yd2sqxyyk3v"))))
+    (build-system gnu-build-system)
+    (arguments
+     (list #:make-flags
+           #~(list (string-append "CUDA_HOME=" #$(this-package-input "cuda-toolkit")))
+           ;; No tests in source.
+           #:tests? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               ;; No configure script.
+               (delete 'configure)
+               (add-before 'install 'set-prefix
+                 (lambda _
+                   (setenv "PREFIX" #$output))))))
+    (native-inputs (list python which))
+    (inputs (list cuda))
+    (home-page "https://developer.nvidia.com/nccl")
+    (synopsis
+     "Optimized primitives for collective multi-GPU communication between
+NVIDIA GPUs")
+    (description
+     "NCCL (pronounced \"Nickel\") is a stand-alone library of standard
+communication routines for NVIDIA GPUs, implementing all-reduce,
+all-gather, reduce, broadcast, reduce-scatter, as well as any
+send/receive based communication pattern. It has been optimized to
+achieve high bandwidth on platforms using PCIe, NVLink, NVswitch, as
+well as networking using InfiniBand Verbs or TCP/IP sockets. NCCL
+supports an arbitrary number of GPUs installed in a single node or
+across multiple nodes, and can be used in either single- or
+multi-process (e.g., MPI) applications.")
+    (license license:bsd-3)))
