@@ -86,3 +86,31 @@
 		   (invoke "make" "install"))))))
     (synopsis
      "Intel PSM2 communication library, with NVIDIA GPU Direct support")))
+
+(define-public libfabric-cuda
+  (package/inherit libfabric
+    (name (string-append (package-name libfabric) "-cuda"))
+    (arguments (substitute-keyword-arguments (package-arguments libfabric)
+                 ((#:configure-flags flags)
+                  #~(append (list (string-append "--with-cuda=" #$(this-package-input "cuda-toolkit")))
+                            #$flags))
+                 ((#:phases phases '%standard-phases)
+                  #~(modify-phases #$phases
+                      (add-before 'configure 'fix-library-path
+                        (lambda _
+                          ;; This is needed for the configure script
+                          ;; to find libcudart.so.
+                          (setenv "LIBRARY_PATH"
+                                  (string-append (getenv "LIBRARY_PATH")
+                                                 ":"
+                                                 #$(this-package-input "cuda-toolkit")
+                                                 "/lib/stubs"))))))
+                 ((#:tests? #t #t)
+                  ;; Disable tests as there is no libcuda.so.
+                  #f)
+                 ((#:validate-runpath? #t #t)
+                  ;; Disable because of missing libcuda.so.
+                  #f)))
+    (inputs (modify-inputs (package-inputs libfabric)
+              (replace "psm2" psm2-cuda)
+              (append cuda)))))
