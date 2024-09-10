@@ -114,7 +114,10 @@
                 (setenv "PERL5LIB" (getcwd)) ;for InstallUtils.pm
                 (invoke "perl" "install-linux.pl"
                         (string-append "--prefix=" #$output))
-                (rename-file lib64 lib))))
+                (rename-file lib64 lib)
+                ;; Many packages expect to find /lib64 so the path
+                ;; should exist.
+                (symlink lib lib64))))
           (add-after 'install 'move-documentation
             (lambda* (#:key outputs #:allow-other-keys)
               (let* ((out    (assoc-ref outputs "out"))
