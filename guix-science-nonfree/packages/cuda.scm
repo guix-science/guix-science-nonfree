@@ -88,13 +88,16 @@
 
               (define (patch-elf file)
                 (make-file-writable file)
+                (format #t "Setting RPATH on '~a'...~%" file)
+                ;; RPATH should be modified before the interpreter. If
+                ;; done the other way around, it nukes the resulting
+                ;; binary.
+                (invoke "patchelf" "--set-rpath" rpath
+                        "--force-rpath" file)
                 (unless (string-contains file ".so")
                   (format #t "Setting interpreter on '~a'...~%" file)
                   (invoke "patchelf" "--set-interpreter" ld.so
-                          file))
-                (format #t "Setting RPATH on '~a'...~%" file)
-                (invoke "patchelf" "--set-rpath" rpath
-                        "--force-rpath" file))
+                          file)))
 
               (for-each (lambda (file)
                           (when (elf-file? file)
