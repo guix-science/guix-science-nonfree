@@ -265,6 +265,17 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                 (copy-recursively "builds/cuda-toolkit/nvvm/libdevice/"
                                   (string-append #$output "/nvvm/libdevice"))))))))))
 
+(define-public cuda-12.2
+  (package
+    (inherit cuda-11.0)
+    (version "12.2.2")
+    (source
+     (cuda-source
+      "https://developer.download.nvidia.com/compute/cuda/12.2.2/local_installers/cuda_12.2.2_535.104.05_linux.run"
+      "1wifjm9b7bbb0w2znxfzw2qc0a8zqqdizyn8ldcrz3b1wzislf9b"))
+   (inputs
+     `(("gcc:lib" ,gcc-12 "lib")))))
+
 (define-public cuda-12.3
   (package
     (inherit cuda-11.0)
