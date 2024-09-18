@@ -207,7 +207,12 @@ libraries for NVIDIA GPUs, all of which are proprietary.")
                                            (_ #t))))
                   ;; 'cicc' needs that directory.
                   (copy-recursively "cuda_nvcc/nvvm/libdevice"
-                                    (string-append #$output "/nvvm/libdevice")))))
+                                    (string-append #$output "/nvvm/libdevice")))
+                ;; Many packages expect to find the stubs folder in
+                ;; /lib64, as it seems it was the default in previous
+                ;; CUDA versions.
+                (symlink (string-append #$output "/lib/stubs")
+                         (string-append #$output "/lib64/stubs"))))
             (add-after 'install 'install-cupti
               (lambda _
                 (copy-recursively "builds/cuda_cupti/extras/CUPTI" #$output)))
