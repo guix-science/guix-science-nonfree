@@ -51,13 +51,7 @@
      (list #:phases
            #~(modify-phases %standard-phases
                ;; No configure script.
-               (delete 'configure)
-               ;; stubs subfolder is in lib, not in lib64.
-               (add-before 'build 'fix-stubs-path
-                 (lambda _
-                   (substitute* "tests/Makefile"
-                     (("lib64/stubs")
-                      "lib/stubs")))))
+               (delete 'configure))
            #:make-flags
            #~(list (string-append "CC=" #$(cc-for-target))
                    ;; cc compiler is not found if the above is not defined.
@@ -92,14 +86,6 @@ memory.")
                         (string-append "--with-gdrcopy="
                                        #$(this-package-input "gdrcopy")))
                   #$flags))
-       ((#:phases phases '%standard-phases)
-        #~(modify-phases #$phases
-            ;; stubs subfolder is in lib, not in lib64.
-            (add-before 'bootstrap 'fix-stubs-path
-              (lambda _
-                (substitute* "config/m4/cuda.m4"
-                  (("libsuff=\\\"64\\\"")
-                   "libsuff=\"\""))))))
        ((#:validate-runpath? #f #f)
         #f)))
     (inputs (modify-inputs (package-inputs ucx)
