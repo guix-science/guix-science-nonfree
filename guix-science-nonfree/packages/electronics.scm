@@ -134,11 +134,11 @@
 
 ;;; * ghdl
 
-(define-public ghdl
+(define-public ghdl-clang
   (let ((commit "eeab69c29b68eb3f7fd51e6337eedb924d7be829")
         (revision "0"))
     (package
-      (name "ghdl")
+      (name "ghdl-clang")
       (version (git-version "4.1.0" revision commit))
       (source
        (origin
