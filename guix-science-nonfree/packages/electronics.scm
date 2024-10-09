@@ -195,7 +195,7 @@
        "GHDL analyse and elaborate VHDL sources for generating machine code.")
       (license license:lgpl2.0))))
 
-(define-public ghdl-yosys-plugin
+(define-public ghdl-yosys-plugin-clang
   (let ((commit "511412f984d64ed7c46c4bdbd839f4b3c48f6fa5")
         (revision "0"))
     (package
