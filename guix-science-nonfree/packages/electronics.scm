@@ -194,3 +194,40 @@
       (description
        "GHDL analyse and elaborate VHDL sources for generating machine code.")
       (license license:lgpl2.0))))
+
+(define-public ghdl-yosys-plugin
+  (let ((commit "511412f984d64ed7c46c4bdbd839f4b3c48f6fa5")
+        (revision "0"))
+    (package
+      (name "ghdl-yosys-plugin")
+      (version (git-version "0.0" revision commit))
+      (source
+       (origin
+         (method git-fetch)
+         (uri (git-reference
+               (url "https://github.com/ghdl/ghdl-yosys-plugin")
+               (commit commit)))
+         (file-name (git-file-name name version))
+         (sha256
+          (base32
+           "1mbg4s80sbmhgmrgh3wvjwnbg0q6ha2rsm8xgypdy7pq7bp0pc97"))))
+      (build-system gnu-build-system)
+      (arguments
+       (list
+        #:phases
+        #~(modify-phases %standard-phases
+            (delete 'configure)
+            (delete 'check)
+            (replace 'install
+              (lambda* _
+                (let ((lib (string-append #$output "/lib")))
+                  (mkdir-p lib)
+                  (copy-file "ghdl.so" (string-append lib "/ghdl.so"))))))))
+      (inputs
+       (list yosys-clang ghdl-clang tcl readline))
+      (home-page "https://github.com/ghdl/ghdl-yosys-plugin")
+      (synopsis
+       "Yosys VHDL synthesis module based on ghdl")
+      (description
+       "Shared library module for yosys to implement logical synthesis of VHDL designs.")
+      (license license:gpl3+))))
