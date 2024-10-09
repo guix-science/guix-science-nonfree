@@ -199,7 +199,7 @@
   (let ((commit "511412f984d64ed7c46c4bdbd839f4b3c48f6fa5")
         (revision "0"))
     (package
-      (name "ghdl-yosys-plugin")
+      (name "ghdl-yosys-plugin-clang")
       (version (git-version "0.0" revision commit))
       (source
        (origin
