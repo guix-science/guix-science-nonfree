@@ -3,6 +3,13 @@
   (url "https://github.com/guix-science/guix-science-nonfree.git")
   (dependencies
    (channel
+    (name nonguix)
+    (url "https://gitlab.com/nonguix/nonguix")
+    (introduction
+     (channel-introduction
+      (version 0)
+      (signer "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
+   (channel
     (name guix-science)
     (url "https://github.com/guix-science/guix-science.git")
     (introduction
