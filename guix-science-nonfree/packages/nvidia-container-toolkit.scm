@@ -19,7 +19,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 
-(define-module (guix-science-nonfree packages nvidia-docker)
+(define-module (guix-science-nonfree packages nvidia-container-toolkit)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
   #:use-module (guix utils)
@@ -43,7 +43,6 @@
   #:use-module (gnu packages elf)
   #:use-module (gnu packages m4)
   #:use-module (gnu packages linux)
-  #:use-module (nongnu packages nvidia)
   )
 
 (define-public nvidia-modprobe
@@ -74,14 +73,13 @@
 	  (add-after 'build 'build-static-link-libraries
 	    (lambda* (#:key inputs outputs #:allow-other-keys)
 	      (invoke "ar" "rcs" "_out/Linux_x86_64/libnvidia-modprobe-utils.a" "_out/Linux_x86_64/nvidia-modprobe-utils.o" "_out/Linux_x86_64/pci-sysfs.o")
-	      (copy-recursively "_out/Linux_x86_64/" (string-append (assoc-ref %outputs "out") "/lib"))))
+	      (copy-recursively "_out/Linux_x86_64/" (string-append #$output "/lib"))))
 	  (delete 'check)
 	  (add-after 'patch-source-shebangs 'replace-prefix
 	    (lambda* (#:key inputs outputs #:allow-other-keys)
     	      (setenv "CC" "gcc")
-	      (setenv "PREFIX" (assoc-ref %outputs "out"))
-	      (copy-recursively "modprobe-utils/" (string-append (assoc-ref %outputs "out") "/include"))
-	      #true) ; must return true for success
+	      (setenv "PREFIX" #$output)
+	      (copy-recursively "modprobe-utils/" (string-append #$output "/include")))
 	    ))
       #:tests? #f))
     (native-inputs
@@ -148,8 +146,7 @@
 		 "WITH_LIBELF ?= yes"))
     	      (substitute* "mk/common.mk"
 		(("^REVISION.*")
-		 (string-append "REVISION ?= " #$version "\n" "CC := gcc\n")))
-	      #true) ; must return true for success
+		 (string-append "REVISION ?= " #$version "\n" "CC := gcc\n"))))
 	    ))
       #:tests? #f))
     (native-inputs
