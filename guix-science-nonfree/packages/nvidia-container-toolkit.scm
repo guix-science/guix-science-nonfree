@@ -180,7 +180,7 @@
 	    (lambda* (#:key inputs outputs #:allow-other-keys)
 	      (substitute* "src/github.com/NVIDIA/nvidia-container-toolkit/internal/config/config.go"
 (("/usr/bin")
-		 "/run/current-system/profile/bin"))))
+		 (string-append #$output "/bin")))))
           (replace 'build
             (lambda arguments
               (for-each
