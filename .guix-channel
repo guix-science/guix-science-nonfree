@@ -1,6 +1,7 @@
 (channel
   (version 0)
   (url "https://codeberg.org/guix-science/guix-science-nonfree.git")
+  (news-file "NEWS")
   (dependencies
    (channel
     (name guix-science)
