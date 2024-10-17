@@ -49,5 +49,5 @@ We accept software fulfilling the following criteria:
 - Related to scientific research or teaching.
 
 .. _Free and open source: https://opensource.org/osd
-.. _guix-science: https://github.com/guix-science/guix-science
+.. _guix-science: https://codeberg.org/guix-science/guix-science
 

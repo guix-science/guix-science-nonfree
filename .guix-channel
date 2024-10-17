@@ -4,7 +4,7 @@
   (dependencies
    (channel
     (name guix-science)
-    (url "https://github.com/guix-science/guix-science.git")
+    (url "https://codeberg.org/guix-science/guix-science.git")
     (introduction
 	 (channel-introduction
       (version 0)
