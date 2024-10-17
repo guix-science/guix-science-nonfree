@@ -1,6 +1,6 @@
 (channel
   (version 0)
-  (url "https://github.com/guix-science/guix-science-nonfree.git")
+  (url "https://codeberg.org/guix-science/guix-science-nonfree.git")
   (dependencies
    (channel
     (name guix-science)
